@@ -5616,34 +5616,36 @@ def create_demo():
                 current_image_name = gr.State(value=None)
 
                 with gr.Row(equal_height=True):
-                    # 왼쪽: 이미지 업로드 영역
+                    # 왼쪽: 이미지 영역
                     with gr.Column(scale=1):
-                        gr.Markdown("#### 검사 이미지")
-                        chat_image_input = gr.Image(type="pil", label="분석할 이미지를 업로드하세요", height=250)
-
-                        # 선택된 이미지 정보 표시
-                        selected_image_info = gr.Markdown(value="", elem_classes=["info-box"])
-
-                        # 시각화 버튼
-                        with gr.Row():
-                            visualize_btn = gr.Button("결함 좌표 시각화", variant="primary", size="sm")
-
-                        # 시각화 결과 출력
-                        with gr.Accordion("좌표 시각화 결과", open=True):
-                            visualized_image = gr.Image(type="pil", label="시각화된 이미지", height=220)
-                            visualization_info = gr.Markdown(value="이미지를 선택한 후 '결함 좌표 시각화' 버튼을 클릭하세요.")
-
+                        # 샘플 이미지 (맨 위)
                         if SAMPLE_IMAGES:
-                            gr.Markdown(f"#### 샘플 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭)")
+                            gr.Markdown(f"#### 샘플 결함 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭하여 선택)")
                             sample_gallery = gr.Gallery(
                                 value=[(str(img), img.name) for img in SAMPLE_IMAGES],
                                 columns=6,
-                                rows=2,
-                                height=140,
+                                rows=3,
+                                height=180,
                                 object_fit="cover",
                                 show_label=False,
                                 allow_preview=False,
                             )
+
+                        gr.Markdown("---")
+
+                        # 결함 좌표 시각화 (클릭시 팝업 확대)
+                        gr.Markdown("#### 결함 좌표 시각화 (클릭하여 확대)")
+                        visualized_image = gr.Image(
+                            type="pil",
+                            label="결함 위치가 표시된 이미지 (클릭하여 확대)",
+                            height=350,
+                            interactive=False,
+                        )
+                        visualization_info = gr.Markdown(value="위에서 샘플 이미지를 클릭하면 결함 위치가 자동으로 표시됩니다.")
+                        selected_image_info = gr.Markdown(value="", elem_classes=["info-box"])
+
+                        # 숨겨진 이미지 입력 (채팅용)
+                        chat_image_input = gr.Image(type="pil", visible=False)
 
                         with gr.Accordion("자동 분석 결과", open=False):
                             gr.Markdown("#### 분석 결과")
@@ -5690,13 +5692,6 @@ def create_demo():
 
                 # 이벤트 연결
                 analyze_btn.click(analyze_image, inputs=[chat_image_input], outputs=[result_html, raw_output])
-
-                # 시각화 버튼 이벤트
-                visualize_btn.click(
-                    visualize_defect_coordinates,
-                    inputs=[chat_image_input, current_image_name],
-                    outputs=[visualized_image, visualization_info]
-                )
 
                 # 채팅 이벤트 (이미지 이름 포함)
                 vlm_send_btn.click(
