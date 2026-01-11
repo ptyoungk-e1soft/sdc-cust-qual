@@ -96,6 +96,13 @@ try:
 except ImportError:
     CS_WORKFLOW_AVAILABLE = False
 
+# VLM 모델 모듈
+try:
+    from src.model.cosmos_wrapper import CosmosReasonWrapper
+    VLM_AVAILABLE = True
+except ImportError:
+    VLM_AVAILABLE = False
+
 # 전역 CS 워크플로우 인스턴스
 cs_manager = None
 quality_analyzer = None
@@ -107,6 +114,30 @@ SAMPLE_IMAGES = list(SAMPLE_DIR.glob("*.png"))[:30] if SAMPLE_DIR.exists() else 
 
 # 전역 KnowledgeBase 인스턴스
 kb = None
+
+# 전역 VLM 모델 인스턴스
+vlm_model = None
+
+
+def init_vlm_model(model_path: str = None, quantize: bool = True):
+    """VLM 모델 초기화 (lazy loading)"""
+    global vlm_model
+
+    if not VLM_AVAILABLE:
+        return None, "VLM 모듈을 로드할 수 없습니다. 필요한 패키지를 설치하세요."
+
+    if vlm_model is not None:
+        return vlm_model, "VLM 모델이 이미 로드되어 있습니다."
+
+    try:
+        vlm_model = CosmosReasonWrapper(
+            model_path=model_path or "nvidia/Cosmos-Reason1-7B",
+            load_in_4bit=quantize,
+        )
+        vlm_model.load()
+        return vlm_model, "VLM 모델 로드 완료!"
+    except Exception as e:
+        return None, f"VLM 모델 로드 실패: {str(e)}"
 
 
 def init_knowledge_base(use_neo4j: bool = False, neo4j_password: str = "password"):
@@ -272,79 +303,107 @@ def analyze_image(image):
 
 # ==================== VLM 채팅 기능 ====================
 
+# VLM 시스템 프롬프트
+VLM_SYSTEM_PROMPT = """당신은 디스플레이 품질 검사 전문가입니다.
+사용자가 업로드한 디스플레이 패널 이미지를 분석하여 다음 정보를 제공합니다:
+- 결함 유형 (라인 결함, 데드 픽셀, 휘점, 무라, 스크래치, 이물질 등)
+- 결함 위치 (좌표, 영역)
+- 심각도 (Critical, Major, Minor, Cosmetic)
+- 근본 원인 추정
+- 권장 조치사항
+
+한국어로 상세하고 전문적으로 답변하세요.
+이미지에서 관찰되는 내용을 정확하게 설명하고, 디스플레이 제조 공정 지식을 활용하여 분석하세요."""
+
+
 def vlm_chat_response(message, history, image):
-    """VLM 채팅 응답 생성"""
-    import random
+    """VLM 채팅 응답 생성 - 실제 VLM 모델 사용"""
+    global vlm_model
 
     if image is None:
         return "이미지를 먼저 업로드해주세요. 이미지가 있어야 분석이 가능합니다."
 
-    # 사용자 질문 분석
+    # VLM 모델 초기화 (lazy loading)
+    if vlm_model is None:
+        if not VLM_AVAILABLE:
+            return _vlm_fallback_response(message, history, image)
+
+        try:
+            model, status = init_vlm_model(quantize=True)
+            if model is None:
+                return f"VLM 모델 로드 실패: {status}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+        except Exception as e:
+            return f"VLM 모델 초기화 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+
+    # 대화 기록을 컨텍스트로 구성
+    context = ""
+    if history:
+        for h in history[-3:]:  # 최근 3개 대화만 사용
+            context += f"사용자: {h[0]}\n어시스턴트: {h[1]}\n\n"
+
+    # 프롬프트 구성
+    if context:
+        prompt = f"이전 대화:\n{context}\n현재 질문: {message}\n\n위 이미지와 이전 대화 맥락을 고려하여 질문에 답변하세요."
+    else:
+        prompt = f"질문: {message}\n\n위 디스플레이 패널 이미지를 분석하여 질문에 답변하세요."
+
+    try:
+        # 실제 VLM 모델로 응답 생성
+        response = vlm_model.generate(
+            image=image,
+            prompt=prompt,
+            system_prompt=VLM_SYSTEM_PROMPT,
+            max_new_tokens=1024,
+            temperature=0.1,
+            do_sample=False,
+        )
+        return response
+    except Exception as e:
+        return f"VLM 추론 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+
+
+def _vlm_fallback_response(message, history, image):
+    """VLM 모델 사용 불가시 폴백 응답 (데모용)"""
+    import random
+
     message_lower = message.lower()
 
     # 질문 유형별 응답 생성
     if any(word in message_lower for word in ["결함", "defect", "문제", "이상", "뭐가", "무엇"]):
         responses = [
-            "이미지를 분석한 결과, **라인 결함(Line Defect)**이 관찰됩니다. 화면 중앙부에서 수직 방향으로 약 2mm 길이의 밝은 선이 보입니다. 이는 TFT 구동 회로의 단선 또는 단락으로 인해 발생할 수 있습니다.",
-            "분석 결과 **무라(Mura) 현상**이 검출되었습니다. 좌측 하단 영역에서 불균일한 밝기 분포가 나타나고 있으며, 이는 백라이트 불균일 또는 액정 배향 문제로 추정됩니다.",
-            "**데드 픽셀(Dead Pixel)**이 발견되었습니다. 우측 상단 (1280, 450) 좌표 근처에 약 0.3mm 크기의 검은 점이 관찰됩니다. TFT 트랜지스터 불량이 원인으로 보입니다.",
-            "이미지에서 **휘점 결함(Bright Spot)**이 탐지되었습니다. 중앙 영역에 비정상적으로 밝은 픽셀 클러스터가 있으며, 이는 액정 누출 또는 전극 손상으로 인한 것으로 추정됩니다."
+            "[데모 모드] 이미지를 분석한 결과, **라인 결함(Line Defect)**이 관찰됩니다. 화면 중앙부에서 수직 방향으로 약 2mm 길이의 밝은 선이 보입니다. 이는 TFT 구동 회로의 단선 또는 단락으로 인해 발생할 수 있습니다.",
+            "[데모 모드] 분석 결과 **무라(Mura) 현상**이 검출되었습니다. 좌측 하단 영역에서 불균일한 밝기 분포가 나타나고 있습니다.",
+            "[데모 모드] **데드 픽셀(Dead Pixel)**이 발견되었습니다. 우측 상단 좌표 근처에 약 0.3mm 크기의 검은 점이 관찰됩니다.",
         ]
         return random.choice(responses)
 
     elif any(word in message_lower for word in ["원인", "왜", "이유", "cause", "why"]):
         responses = [
-            "이 결함의 **주요 원인**으로 다음을 추정합니다:\n\n1. **공정 요인**: CVD 증착 공정에서의 온도 불균일\n2. **설비 요인**: 에칭 장비의 RF 파워 불안정\n3. **재료 요인**: 타겟 재료의 순도 저하\n\n유사 사례 분석 결과, 설비 PM 후 발생 빈도가 높아 설비 안정화 시간 부족이 주원인으로 추정됩니다.",
-            "결함 원인 분석 결과:\n\n**1차 원인**: TFT 게이트 라인의 저항 증가\n**2차 원인**: 증착 두께 불균일 (목표 대비 ±15%)\n**근본 원인**: 최근 타겟 교체 후 스퍼터링 조건 최적화 미흡\n\n권장사항: 스퍼터링 파워 및 가스 유량 재조정 필요",
-            "원인 분석 결과입니다:\n\n- **직접 원인**: 픽셀 전극과 공통 전극 간 쇼트\n- **공정 원인**: 포토리소그래피 공정에서 레지스트 잔류물\n- **환경 원인**: 클린룸 파티클 수치 상승 (Class 100 → Class 500)\n\n조치: 클린룸 환경 점검 및 웨이퍼 세정 공정 강화 필요"
+            "[데모 모드] 이 결함의 **주요 원인**으로 다음을 추정합니다:\n\n1. **공정 요인**: CVD 증착 공정에서의 온도 불균일\n2. **설비 요인**: 에칭 장비의 RF 파워 불안정\n3. **재료 요인**: 타겟 재료의 순도 저하",
+            "[데모 모드] 결함 원인 분석 결과:\n\n**1차 원인**: TFT 게이트 라인의 저항 증가\n**근본 원인**: 최근 타겟 교체 후 스퍼터링 조건 최적화 미흡",
         ]
         return random.choice(responses)
 
     elif any(word in message_lower for word in ["위치", "어디", "location", "where", "좌표"]):
-        responses = [
-            "결함 위치 분석 결과:\n\n📍 **위치**: 화면 중앙부 (X: 512, Y: 384)\n📏 **크기**: 약 0.5mm x 2.0mm\n🔍 **영역**: Active Area 내부\n\n이 위치는 TFT 어레이의 데이터 라인 영역과 일치하며, 구동 IC 출력 채널 #128 근처입니다.",
-            "결함 좌표 정보:\n\n- **시작점**: (1024, 256)\n- **종료점**: (1024, 890)\n- **방향**: 수직 (Vertical)\n- **Panel Zone**: Zone C (중앙)\n\n데이터 라인 #512번에 해당하는 영역입니다.",
-            "위치 분석:\n\n🎯 중심 좌표: **(640, 480)**\n📐 영향 범위: 반경 약 3mm\n🗺️ 패널 영역: 좌측 상단 (1/4 영역)\n\n이 영역은 게이트 드라이버 IC 연결부와 근접한 위치입니다."
-        ]
-        return random.choice(responses)
+        return "[데모 모드] 결함 위치 분석 결과:\n\n**위치**: 화면 중앙부 (X: 512, Y: 384)\n**크기**: 약 0.5mm x 2.0mm\n**영역**: Active Area 내부"
 
     elif any(word in message_lower for word in ["심각", "등급", "레벨", "severity", "critical", "major"]):
-        responses = [
-            "**심각도 평가 결과: MAJOR**\n\n📊 평가 기준:\n- 결함 크기: 0.3mm (기준 0.1mm 초과) → Major\n- 발생 위치: Active Area 내부 → Critical 요소\n- 시인성: 육안 확인 가능 → Major\n\n종합 판정: **Major Defect** - 출하 불가, 재작업 필요",
-            "심각도 분석:\n\n⚠️ **등급: CRITICAL**\n\n판정 근거:\n1. 결함이 Display Active 영역 중앙부에 위치\n2. 화면 ON 상태에서 명확히 식별됨\n3. 고객 시인성 영역에 해당\n\n조치: 즉시 폐기 처리 및 동일 LOT 전수 검사 필요",
-            "**심각도: MINOR**\n\n📋 평가 결과:\n- 결함 크기: 0.08mm (기준 내)\n- 위치: Edge 영역 (Bezel 하부)\n- 시인성: 일반 조건에서 미식별\n\n판정: 출하 가능 (단, 품질 모니터링 대상)"
-        ]
-        return random.choice(responses)
+        return "[데모 모드] **심각도 평가 결과: MAJOR**\n\n평가 기준:\n- 결함 크기: 0.3mm (기준 0.1mm 초과)\n- 발생 위치: Active Area 내부\n- 시인성: 육안 확인 가능\n\n종합 판정: **Major Defect** - 출하 불가"
 
     elif any(word in message_lower for word in ["조치", "해결", "대책", "action", "solution", "어떻게"]):
-        responses = [
-            "**권장 조치사항:**\n\n🔧 **즉시 조치**\n1. 해당 LOT 생산 중단\n2. 설비 파라미터 점검 (온도, 압력, 시간)\n3. 동일 시간대 생산품 샘플링 검사\n\n🛡️ **재발 방지**\n1. PM 후 더미 런 횟수 증가 (3회 → 5회)\n2. 공정 모니터링 주기 단축\n3. 작업자 교육 강화",
-            "조치 방안을 안내드립니다:\n\n**1단계 - 긴급 조치**\n- 설비 가동 중단 및 점검\n- 해당 배치 격리 보관\n\n**2단계 - 원인 제거**\n- 타겟 재료 교체\n- 챔버 클리닝 실시\n\n**3단계 - 검증**\n- 테스트 런 3회 실시\n- 품질 확인 후 양산 재개",
-            "**개선 대책:**\n\n✅ 단기 대책 (1주 내)\n- 검사 기준 강화 (휘도 편차 ±5% → ±3%)\n- 인라인 AOI 검사 추가\n\n✅ 중기 대책 (1개월 내)\n- 설비 예방 정비 주기 단축\n- SPC 관리 항목 추가\n\n✅ 장기 대책 (3개월 내)\n- 신규 검사 장비 도입\n- AI 기반 예측 모니터링 시스템 구축"
-        ]
-        return random.choice(responses)
+        return "[데모 모드] **권장 조치사항:**\n\n**즉시 조치**\n1. 해당 LOT 생산 중단\n2. 설비 파라미터 점검\n3. 동일 시간대 생산품 샘플링 검사\n\n**재발 방지**\n1. PM 후 더미 런 횟수 증가\n2. 공정 모니터링 주기 단축"
 
     elif any(word in message_lower for word in ["유사", "비슷", "similar", "과거", "사례", "이력"]):
-        responses = [
-            "**유사 사례 검색 결과 (3건):**\n\n📁 **Case #2024-0892** (2024.10.15)\n- 결함: 라인 결함 (수직)\n- 원인: Gate IC 본딩 불량\n- 조치: 본딩 조건 최적화\n- 재발: 없음\n\n📁 **Case #2024-0756** (2024.09.22)\n- 결함: 라인 결함 (수평)\n- 원인: 에칭 언더컷\n- 조치: 에칭 시간 조정\n- 재발: 1회\n\n📁 **Case #2024-0634** (2024.08.10)\n- 결함: 유사 패턴\n- 원인: 타겟 오염\n- 조치: 타겟 교체\n- 재발: 없음",
-            "GraphRAG 검색 결과:\n\n🔍 **매칭률 95%** - Case #2024-1023\n- 동일 설비(CVD-02)에서 발생\n- 동일 유형 결함\n- 해결: 가스 유량 조정으로 해결\n\n🔍 **매칭률 87%** - Case #2024-0891\n- 유사 위치 발생\n- PM 직후 발생 패턴 일치\n- 해결: 안정화 시간 연장\n\n💡 **권장**: Case #2024-1023의 조치 방법 적용 권장"
-        ]
-        return random.choice(responses)
+        return "[데모 모드] **유사 사례 검색 결과:**\n\n**Case #2024-0892** (2024.10.15)\n- 결함: 라인 결함 (수직)\n- 원인: Gate IC 본딩 불량\n- 조치: 본딩 조건 최적화\n- 재발: 없음"
 
     elif any(word in message_lower for word in ["크기", "사이즈", "size", "넓이", "면적"]):
-        return "결함 크기 측정 결과:\n\n📐 **가로**: 0.35mm\n📏 **세로**: 1.2mm\n📊 **면적**: 0.42mm²\n\n기준 대비:\n- 가로: 기준(0.3mm) 대비 117%\n- 세로: 기준(0.5mm) 대비 240%\n- 면적: 기준(0.15mm²) 대비 280%\n\n⚠️ 모든 항목에서 기준 초과"
+        return "[데모 모드] 결함 크기 측정 결과:\n\n**가로**: 0.35mm\n**세로**: 1.2mm\n**면적**: 0.42mm²\n\n모든 항목에서 기준 초과"
 
     elif any(word in message_lower for word in ["수량", "개수", "몇 개", "count", "how many"]):
-        return "결함 검출 개수:\n\n🔴 **Critical**: 0개\n🟠 **Major**: 2개\n🟡 **Minor**: 5개\n⚪ **Cosmetic**: 3개\n\n**총 결함 수: 10개**\n\n판정: Major 결함 존재로 **NG** 판정"
+        return "[데모 모드] 결함 검출 개수:\n\n- Critical: 0개\n- Major: 2개\n- Minor: 5개\n- Cosmetic: 3개\n\n**총 결함 수: 10개**\n\n판정: Major 결함 존재로 **NG**"
 
     else:
-        # 일반 질문에 대한 응답
-        responses = [
-            f"네, 이미지를 분석해보겠습니다.\n\n현재 업로드된 이미지에서 디스플레이 패널의 결함 여부를 확인하고 있습니다. 구체적인 분석을 원하시면 다음과 같이 질문해주세요:\n\n- \"어떤 결함이 있나요?\"\n- \"결함의 원인은 뭔가요?\"\n- \"결함 위치가 어디인가요?\"\n- \"심각도는 어느 정도인가요?\"\n- \"어떤 조치가 필요한가요?\"\n- \"유사 사례가 있나요?\"",
-            f"질문: \"{message}\"\n\n이미지 분석 결과를 바탕으로 답변드리겠습니다. 해당 디스플레이 패널에서 **라인 결함**이 관찰되며, 중앙부에 위치합니다. 더 자세한 정보가 필요하시면 구체적으로 질문해주세요.",
-            f"이미지를 분석 중입니다...\n\n현재 패널에서 **Minor 등급의 결함**이 1건 탐지되었습니다. 결함 유형은 미세 스크래치로 추정되며, Edge 영역에 위치합니다.\n\n추가 질문이 있으시면 말씀해주세요."
-        ]
-        return random.choice(responses)
+        return f"[데모 모드] 질문: \"{message}\"\n\n이미지에서 디스플레이 패널을 분석하고 있습니다. 구체적인 분석을 원하시면 다음과 같이 질문해주세요:\n\n- \"어떤 결함이 있나요?\"\n- \"결함의 원인은 뭔가요?\"\n- \"결함 위치가 어디인가요?\"\n- \"심각도는 어느 정도인가요?\"\n- \"어떤 조치가 필요한가요?\""
 
 
 def vlm_chat(message, history, image):
