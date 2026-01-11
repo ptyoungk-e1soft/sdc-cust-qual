@@ -248,6 +248,190 @@ def get_defect_info(image_name: str) -> dict:
     return DEFECT_METADATA.get(image_name, {})
 
 
+def visualize_defect_coordinates(image, image_name: str = None, custom_coords: dict = None):
+    """결함 좌표를 이미지에 시각화"""
+    from PIL import ImageDraw, ImageFont
+
+    if image is None:
+        return None, "이미지를 먼저 업로드해주세요."
+
+    # 이미지 복사 (원본 보존)
+    if isinstance(image, Image.Image):
+        img = image.copy()
+    else:
+        return None, "유효하지 않은 이미지입니다."
+
+    # RGB로 변환
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # 좌표 가져오기
+    coords = custom_coords
+    defect_info = {}
+
+    if coords is None and image_name:
+        defect_info = DEFECT_METADATA.get(image_name, {})
+        coords = defect_info.get("coordinates", {})
+
+    if coords is None:
+        # 컨텍스트에서 좌표 가져오기
+        coords = current_analysis_context.get("coordinates", {})
+        if current_analysis_context.get("image_name"):
+            defect_info = DEFECT_METADATA.get(current_analysis_context["image_name"], {})
+
+    if not coords:
+        # 기본 좌표 생성 (이미지 중앙)
+        w, h = img.size
+        coords = {
+            "x": w // 4,
+            "y": h // 4,
+            "width": w // 2,
+            "height": h // 2,
+        }
+
+    # 좌표 스케일링 (256x256 기준 → 실제 이미지 크기)
+    img_w, img_h = img.size
+    scale_x = img_w / 256
+    scale_y = img_h / 256
+
+    x = int(coords.get("x", 64) * scale_x)
+    y = int(coords.get("y", 64) * scale_y)
+    w = int(coords.get("width", 30) * scale_x)
+    h = int(coords.get("height", 30) * scale_y)
+
+    # 그리기
+    draw = ImageDraw.Draw(img)
+
+    # 바운딩 박스 그리기 (빨간색, 두께 3)
+    bbox_color = (255, 0, 0)  # Red
+    for i in range(3):  # 두께를 위한 반복
+        draw.rectangle(
+            [x - i, y - i, x + w + i, y + h + i],
+            outline=bbox_color
+        )
+
+    # 중심점 표시
+    center_x, center_y = x + w // 2, y + h // 2
+    cross_size = max(5, min(w, h) // 6)
+    draw.line([(center_x - cross_size, center_y), (center_x + cross_size, center_y)], fill=(0, 255, 0), width=2)
+    draw.line([(center_x, center_y - cross_size), (center_x, center_y + cross_size)], fill=(0, 255, 0), width=2)
+
+    # 라벨 텍스트
+    defect_type = defect_info.get("defect_type", "결함")
+    severity = defect_info.get("severity", "N/A")
+    label = f"{defect_type} ({severity})"
+
+    # 라벨 배경
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", max(12, img_w // 30))
+    except:
+        font = ImageFont.load_default()
+
+    # 텍스트 크기 계산
+    text_bbox = draw.textbbox((0, 0), label, font=font)
+    text_w = text_bbox[2] - text_bbox[0]
+    text_h = text_bbox[3] - text_bbox[1]
+
+    # 라벨 위치 (박스 위쪽)
+    label_x = x
+    label_y = max(0, y - text_h - 8)
+
+    # 라벨 배경 그리기
+    draw.rectangle(
+        [label_x, label_y, label_x + text_w + 6, label_y + text_h + 4],
+        fill=(255, 0, 0)
+    )
+    # 라벨 텍스트 그리기
+    draw.text((label_x + 3, label_y + 2), label, fill=(255, 255, 255), font=font)
+
+    # 좌표 정보 텍스트
+    coord_text = f"({x}, {y}) - ({x + w}, {y + h})"
+    coord_bbox = draw.textbbox((0, 0), coord_text, font=font)
+    coord_w = coord_bbox[2] - coord_bbox[0]
+    coord_h = coord_bbox[3] - coord_bbox[1]
+
+    # 좌표 텍스트 위치 (박스 아래쪽)
+    coord_x = x
+    coord_y = min(img_h - coord_h - 4, y + h + 4)
+
+    draw.rectangle(
+        [coord_x, coord_y, coord_x + coord_w + 6, coord_y + coord_h + 4],
+        fill=(0, 100, 0)
+    )
+    draw.text((coord_x + 3, coord_y + 2), coord_text, fill=(255, 255, 255), font=font)
+
+    # 결과 정보 생성
+    info_text = f"""**결함 시각화 완료**
+
+**Bounding Box:**
+- 시작점: ({x}, {y})
+- 끝점: ({x + w}, {y + h})
+- 크기: {w} x {h} px
+
+**결함 정보:**
+- 유형: {defect_info.get("defect_type", "N/A")}
+- 위치: {defect_info.get("location", "N/A")}
+- 심각도: {defect_info.get("severity", "N/A")}"""
+
+    return img, info_text
+
+
+def visualize_multiple_defects(image, defects: list):
+    """여러 결함 좌표를 이미지에 시각화"""
+    from PIL import ImageDraw, ImageFont
+
+    if image is None:
+        return None
+
+    img = image.copy() if isinstance(image, Image.Image) else None
+    if img is None:
+        return None
+
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    draw = ImageDraw.Draw(img)
+    img_w, img_h = img.size
+    scale_x = img_w / 256
+    scale_y = img_h / 256
+
+    colors = [
+        (255, 0, 0),    # Red
+        (0, 255, 0),    # Green
+        (0, 0, 255),    # Blue
+        (255, 165, 0),  # Orange
+        (128, 0, 128),  # Purple
+    ]
+
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", max(10, img_w // 35))
+    except:
+        font = ImageFont.load_default()
+
+    for idx, defect in enumerate(defects):
+        coords = defect.get("coordinates", {})
+        if not coords:
+            continue
+
+        x = int(coords.get("x", 0) * scale_x)
+        y = int(coords.get("y", 0) * scale_y)
+        w = int(coords.get("width", 20) * scale_x)
+        h = int(coords.get("height", 20) * scale_y)
+
+        color = colors[idx % len(colors)]
+
+        # 바운딩 박스
+        for i in range(2):
+            draw.rectangle([x - i, y - i, x + w + i, y + h + i], outline=color)
+
+        # 번호 라벨
+        label = f"#{idx + 1}"
+        draw.rectangle([x, y - 15, x + 20, y], fill=color)
+        draw.text((x + 3, y - 13), label, fill=(255, 255, 255), font=font)
+
+    return img
+
+
 # 앱 시작시 메타데이터 로드
 load_defect_metadata()
 
@@ -559,6 +743,38 @@ def _vlm_fallback_response(message, history, image, image_name=None):
 - 면적: 560px² (5.6mm²)
 
 **패널 위치:** 중앙 영역"""
+
+    # 시각화 요청
+    if any(word in message_lower for word in ["시각화", "표시", "그려", "보여", "visualize", "draw", "show"]):
+        coords = current_analysis_context.get("coordinates") or defect_info.get("coordinates", {})
+        if coords:
+            x, y = coords.get("x", 128), coords.get("y", 128)
+            w, h = coords.get("width", 20), coords.get("height", 20)
+            return f"""**결함 좌표 시각화 안내**
+
+왼쪽 패널의 **'결함 좌표 시각화'** 버튼을 클릭하면 이미지에 결함 위치가 표시됩니다.
+
+**현재 결함 정보:**
+- 결함 유형: {defect_info.get("defect_type", "N/A")}
+- 위치: {defect_info.get("location", "N/A")}
+- 좌표: ({x}, {y}) - ({x + w}, {y + h})
+- 심각도: {defect_info.get("severity", "N/A")}
+
+시각화 이미지에는 다음 정보가 표시됩니다:
+- **빨간색 박스**: 결함 영역 (Bounding Box)
+- **녹색 십자**: 결함 중심점
+- **라벨**: 결함 유형 및 심각도
+- **좌표 텍스트**: 시작점-끝점 좌표"""
+        else:
+            return """**결함 좌표 시각화 안내**
+
+왼쪽 패널의 **'결함 좌표 시각화'** 버튼을 클릭하면 이미지에 결함 위치가 표시됩니다.
+
+시각화 이미지에는 다음 정보가 표시됩니다:
+- **빨간색 박스**: 결함 영역 (Bounding Box)
+- **녹색 십자**: 결함 중심점
+- **라벨**: 결함 유형 및 심각도
+- **좌표 텍스트**: 시작점-끝점 좌표"""
 
     # 유사 이미지 검색
     if any(word in message_lower for word in ["유사", "비슷", "similar", "같은", "동일", "찾아"]):
@@ -5403,18 +5619,27 @@ def create_demo():
                     # 왼쪽: 이미지 업로드 영역
                     with gr.Column(scale=1):
                         gr.Markdown("#### 검사 이미지")
-                        chat_image_input = gr.Image(type="pil", label="분석할 이미지를 업로드하세요", height=280)
+                        chat_image_input = gr.Image(type="pil", label="분석할 이미지를 업로드하세요", height=250)
 
                         # 선택된 이미지 정보 표시
                         selected_image_info = gr.Markdown(value="", elem_classes=["info-box"])
 
+                        # 시각화 버튼
+                        with gr.Row():
+                            visualize_btn = gr.Button("결함 좌표 시각화", variant="primary", size="sm")
+
+                        # 시각화 결과 출력
+                        with gr.Accordion("좌표 시각화 결과", open=True):
+                            visualized_image = gr.Image(type="pil", label="시각화된 이미지", height=220)
+                            visualization_info = gr.Markdown(value="이미지를 선택한 후 '결함 좌표 시각화' 버튼을 클릭하세요.")
+
                         if SAMPLE_IMAGES:
-                            gr.Markdown(f"#### 샘플 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭하여 선택)")
+                            gr.Markdown(f"#### 샘플 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭)")
                             sample_gallery = gr.Gallery(
                                 value=[(str(img), img.name) for img in SAMPLE_IMAGES],
                                 columns=6,
                                 rows=2,
-                                height=160,
+                                height=140,
                                 object_fit="cover",
                                 show_label=False,
                                 allow_preview=False,
@@ -5455,6 +5680,7 @@ def create_demo():
                         **질문 예시:**
                         - "이 이미지에 어떤 결함이 있나요?"
                         - "**x,y 좌표 알려줘**" (결함 좌표)
+                        - "**좌표 시각화해줘**" (이미지에 표시)
                         - "**유사 이미지 찾아줘**" (비슷한 결함 검색)
                         - "결함의 원인은 무엇인가요?"
                         - "심각도는 어느 정도인가요?"
@@ -5464,6 +5690,13 @@ def create_demo():
 
                 # 이벤트 연결
                 analyze_btn.click(analyze_image, inputs=[chat_image_input], outputs=[result_html, raw_output])
+
+                # 시각화 버튼 이벤트
+                visualize_btn.click(
+                    visualize_defect_coordinates,
+                    inputs=[chat_image_input, current_image_name],
+                    outputs=[visualized_image, visualization_info]
+                )
 
                 # 채팅 이벤트 (이미지 이름 포함)
                 vlm_send_btn.click(
@@ -5490,6 +5723,11 @@ def create_demo():
                         get_image_info,
                         inputs=[current_image_name],
                         outputs=[selected_image_info]
+                    ).then(
+                        # 자동 시각화
+                        visualize_defect_coordinates,
+                        inputs=[chat_image_input, current_image_name],
+                        outputs=[visualized_image, visualization_info]
                     )
 
             # ===== 탭 4: 품질 대시보드 =====
