@@ -1,0 +1,1302 @@
+[
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 장비 파티클이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 좌측 상단\n심각도: low\n가능한 원인: 장비 파티클\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00000.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Gate 누설이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 우측 상단\n심각도: medium\n가능한 원인: Gate 누설\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00001.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 좌측 하단\n심각도: low\n가능한 원인: 클린룸 오염\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00002.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 트랜지스터 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 좌측\n심각도: medium\n가능한 원인: 트랜지스터 손상\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00003.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측 하단\n심각도: medium\n가능한 원인: 운반 중 마찰\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00004.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 증착 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 좌측 상단\n심각도: high\n가능한 원인: 증착 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00005.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측 상단\n심각도: high\n가능한 원인: Driver IC 불량\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00006.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 좌측 하단\n심각도: low\n가능한 원인: TFT 제조 결함\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00007.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 중앙부\n심각도: high\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00008.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 좌측 하단\n심각도: low\n가능한 원인: 핸들링 손상\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00009.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측\n심각도: high\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00010.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 중앙부\n심각도: medium\n가능한 원인: 클린룸 오염\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00011.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측 하단\n심각도: low\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00012.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 재료 이물질이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측 상단\n심각도: high\n가능한 원인: 재료 이물질\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00013.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Gate 누설이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 중앙 상단\n심각도: high\n가능한 원인: Gate 누설\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00014.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측 상단\n심각도: medium\n가능한 원인: 운반 중 마찰\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00015.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측\n심각도: medium\n가능한 원인: Driver IC 불량\n권장 조치: Driver IC 로트 검사\n</answer>"
+      }
+    ],
+    "image": "synthetic_00016.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 우측\n심각도: low\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00017.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측\n심각도: medium\n가능한 원인: TFT 제조 결함\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00018.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 우측 상단\n심각도: critical\n가능한 원인: 백라이트 불균일\n권장 조치: 증착 두께 균일도 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00019.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Gate 누설이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 좌측 하단\n심각도: high\n가능한 원인: Gate 누설\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00020.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 라인 단락이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측 상단\n심각도: medium\n가능한 원인: 라인 단락\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00021.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 중앙 상단\n심각도: low\n가능한 원인: TFT 제조 결함\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00022.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 중앙 상단\n심각도: critical\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00023.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측 하단\n심각도: critical\n가능한 원인: 운반 중 마찰\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00024.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 재료 이물질이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측 하단\n심각도: low\n가능한 원인: 재료 이물질\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00025.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 좌측 하단\n심각도: high\n가능한 원인: TFT 제조 결함\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00026.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측 하단\n심각도: high\n가능한 원인: TFT 제조 결함\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00027.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 우측 하단\n심각도: high\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00028.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 라인 단락이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측 하단\n심각도: medium\n가능한 원인: 라인 단락\n권장 조치: Driver IC 로트 검사\n</answer>"
+      }
+    ],
+    "image": "synthetic_00029.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙 하단\n심각도: high\n가능한 원인: 핸들링 손상\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00030.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 좌측\n심각도: high\n가능한 원인: Driver IC 불량\n권장 조치: Driver IC 로트 검사\n</answer>"
+      }
+    ],
+    "image": "synthetic_00031.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙 상단\n심각도: low\n가능한 원인: 치구 접촉\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00032.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 우측 하단\n심각도: low\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00033.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측 하단\n심각도: critical\n가능한 원인: 클린룸 오염\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00034.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 좌측\n심각도: critical\n가능한 원인: 치구 접촉\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00035.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 장비 파티클이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 좌측 하단\n심각도: high\n가능한 원인: 장비 파티클\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00036.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 증착 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙 상단\n심각도: critical\n가능한 원인: 증착 불균일\n권장 조치: 증착 두께 균일도 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00037.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 트랜지스터 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 좌측 상단\n심각도: high\n가능한 원인: 트랜지스터 손상\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00038.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 좌측 상단\n심각도: medium\n가능한 원인: 핸들링 손상\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00039.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 절연층 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 좌측 상단\n심각도: low\n가능한 원인: 절연층 결함\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00040.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙부\n심각도: medium\n가능한 원인: 치구 접촉\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00041.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 전하 누적이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 중앙 하단\n심각도: medium\n가능한 원인: 전하 누적\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00042.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측\n심각도: critical\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00043.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 재료 이물질이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측\n심각도: critical\n가능한 원인: 재료 이물질\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00044.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 증착 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙 상단\n심각도: low\n가능한 원인: 증착 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00045.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 중앙 상단\n심각도: high\n가능한 원인: 클린룸 오염\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00046.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 절연층 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 우측 상단\n심각도: critical\n가능한 원인: 절연층 결함\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00047.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 좌측\n심각도: critical\n가능한 원인: Driver IC 불량\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00048.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측 상단\n심각도: low\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00049.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 우측 상단\n심각도: medium\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00050.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 증착 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 좌측 하단\n심각도: medium\n가능한 원인: 증착 불균일\n권장 조치: 증착 두께 균일도 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00051.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 좌측 하단\n심각도: low\n가능한 원인: 백라이트 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00052.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 라인 단락이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측 하단\n심각도: critical\n가능한 원인: 라인 단락\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00053.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 전하 누적이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 중앙부\n심각도: medium\n가능한 원인: 전하 누적\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00054.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측\n심각도: low\n가능한 원인: 핸들링 손상\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00055.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측 하단\n심각도: critical\n가능한 원인: 치구 접촉\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00056.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측 상단\n심각도: low\n가능한 원인: TFT 제조 결함\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00057.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 좌측 하단\n심각도: medium\n가능한 원인: 클린룸 오염\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00058.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙 상단\n심각도: low\n가능한 원인: 운반 중 마찰\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00059.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측\n심각도: medium\n가능한 원인: Driver IC 불량\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00060.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙부\n심각도: medium\n가능한 원인: 백라이트 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00061.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측 상단\n심각도: low\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00062.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 회로 단선이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측 하단\n심각도: medium\n가능한 원인: 회로 단선\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00063.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TAB 본딩 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 좌측\n심각도: low\n가능한 원인: TAB 본딩 불량\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00064.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Gate 누설이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 우측 하단\n심각도: critical\n가능한 원인: Gate 누설\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00065.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측 하단\n심각도: low\n가능한 원인: 운반 중 마찰\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00066.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 전하 누적이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 중앙 상단\n심각도: high\n가능한 원인: 전하 누적\n권장 조치: 증착 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00067.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 라인 단락이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 좌측\n심각도: high\n가능한 원인: 라인 단락\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00068.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 절연층 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 우측 하단\n심각도: high\n가능한 원인: 절연층 결함\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00069.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 중앙 상단\n심각도: low\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00070.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측\n심각도: low\n가능한 원인: TFT 제조 결함\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00071.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Gate 누설이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 우측 하단\n심각도: critical\n가능한 원인: Gate 누설\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00072.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙 상단\n심각도: low\n가능한 원인: 핸들링 손상\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00073.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 우측\n심각도: low\n가능한 원인: 치구 접촉\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00074.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 좌측 상단\n심각도: medium\n가능한 원인: 백라이트 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00075.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 우측\n심각도: low\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00076.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 장비 파티클이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측\n심각도: low\n가능한 원인: 장비 파티클\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00077.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 핸들링 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 좌측\n심각도: medium\n가능한 원인: 핸들링 손상\n권장 조치: 핸들링 절차 교육\n</answer>"
+      }
+    ],
+    "image": "synthetic_00078.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 액정 주입 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 우측 상단\n심각도: low\n가능한 원인: 액정 주입 불량\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00079.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 추가 분석 필요이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측\n심각도: critical\n가능한 원인: 추가 분석 필요\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00080.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측 하단\n심각도: low\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00081.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 하단 영역에서 휘점 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 절연층 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 휘점 결함\n위치: 중앙 하단\n심각도: medium\n가능한 원인: 절연층 결함\n권장 조치: 절연 공정 파라미터 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00082.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 영역에서 기타 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 복합 원인이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 기타 결함\n위치: 좌측\n심각도: medium\n가능한 원인: 복합 원인\n권장 조치: 상세 분석 진행\n</answer>"
+      }
+    ],
+    "image": "synthetic_00083.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 증착 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙부\n심각도: high\n가능한 원인: 증착 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00084.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TAB 본딩 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 우측 하단\n심각도: critical\n가능한 원인: TAB 본딩 불량\n권장 조치: Driver IC 로트 검사\n</answer>"
+      }
+    ],
+    "image": "synthetic_00085.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 트랜지스터 손상이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 우측 상단\n심각도: high\n가능한 원인: 트랜지스터 손상\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00086.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 회로 단선이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 좌측 하단\n심각도: low\n가능한 원인: 회로 단선\n권장 조치: 트랜지스터 테스트 강화\n</answer>"
+      }
+    ],
+    "image": "synthetic_00087.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 액정 주입 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 좌측 하단\n심각도: low\n가능한 원인: 액정 주입 불량\n권장 조치: 증착 두께 균일도 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00088.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, Driver IC 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 좌측 하단\n심각도: low\n가능한 원인: Driver IC 불량\n권장 조치: Driver IC 로트 검사\n</answer>"
+      }
+    ],
+    "image": "synthetic_00089.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 라인 결함 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 라인 단락이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 라인 결함\n위치: 중앙 상단\n심각도: critical\n가능한 원인: 라인 단락\n권장 조치: 본딩 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00090.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 상단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 치구 접촉이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 중앙 상단\n심각도: high\n가능한 원인: 치구 접촉\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00091.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 좌측 하단 영역에서 스크래치 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 운반 중 마찰이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 스크래치\n위치: 좌측 하단\n심각도: high\n가능한 원인: 운반 중 마찰\n권장 조치: 보호 필름 적용\n</answer>"
+      }
+    ],
+    "image": "synthetic_00092.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 클린룸 오염이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측 하단\n심각도: high\n가능한 원인: 클린룸 오염\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00093.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 상단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 액정 주입 불량이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 우측 상단\n심각도: critical\n가능한 원인: 액정 주입 불량\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00094.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙부\n심각도: low\n가능한 원인: 백라이트 불균일\n권장 조치: 증착 두께 균일도 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00095.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙 하단 영역에서 무라 (얼룩) 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 백라이트 불균일이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 무라 (얼룩)\n위치: 중앙 하단\n심각도: high\n가능한 원인: 백라이트 불균일\n권장 조치: 백라이트 조정\n</answer>"
+      }
+    ],
+    "image": "synthetic_00096.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 우측 하단 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 재료 이물질이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 우측 하단\n심각도: medium\n가능한 원인: 재료 이물질\n권장 조치: 클린룸 환경 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00097.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 이물질 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, 장비 파티클이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 이물질\n위치: 중앙부\n심각도: low\n가능한 원인: 장비 파티클\n권장 조치: 필터 교체\n</answer>"
+      }
+    ],
+    "image": "synthetic_00098.png"
+  },
+  {
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+      },
+      {
+        "from": "gpt",
+        "value": "<think>이미지를 분석한 결과, 중앙부 영역에서 데드 픽셀 패턴이 관찰됩니다. 결함의 형태와 분포를 고려할 때, TFT 제조 결함이 원인으로 추정됩니다.</think>\n<answer>\n결함 유형: 데드 픽셀\n위치: 중앙부\n심각도: medium\n가능한 원인: TFT 제조 결함\n권장 조치: TFT 공정 장비 점검\n</answer>"
+      }
+    ],
+    "image": "synthetic_00099.png"
+  }
+]

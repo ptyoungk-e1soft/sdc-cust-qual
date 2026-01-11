@@ -1,0 +1,78 @@
+# Cosmos Reason VLM SFT 학습 설정
+# 디스플레이 불량 분류 fine-tuning 용도
+
+[train]
+resume = false
+epoch = 10
+train_batch_per_replica = 1
+gradient_accumulation_steps = 4
+output_dir = "output/display_defect"
+optm_lr = 1e-5
+optm_weight_decay = 0.01
+param_dtype = "bfloat16"
+warmup_ratio = 0.1
+save_steps = 500
+eval_steps = 100
+logging_steps = 10
+
+[train.train_policy]
+type = "sft"
+mini_batch = 4
+enable_dataset_cache = true
+
+[train.train_policy.dataset]
+name = "display_defect"
+annotation_path = "data/sft/train.json"
+media_dir = "data/processed/"
+val_annotation_path = "data/sft/val.json"
+test_annotation_path = "data/sft/test.json"
+
+[policy]
+model_name_or_path = "nvidia/Cosmos-Reason1-7B"
+model_max_length = 4096
+model_gradient_checkpointing = true
+
+# LoRA 설정
+[lora]
+enabled = true
+r = 64
+lora_alpha = 128
+lora_dropout = 0.05
+target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+bias = "none"
+task_type = "CAUSAL_LM"
+
+# 양자화 설정 (QLoRA)
+[quantization]
+enabled = false
+load_in_4bit = true
+bnb_4bit_compute_dtype = "bfloat16"
+bnb_4bit_quant_type = "nf4"
+bnb_4bit_use_double_quant = true
+
+# 결함 유형 정의
+[defect_types]
+dead_pixel = "데드 픽셀"
+bright_spot = "휘점 결함"
+line_defect = "라인 결함"
+mura = "무라 (얼룩)"
+scratch = "스크래치"
+particle = "이물질"
+custom = "기타 결함"
+
+# 프롬프트 템플릿
+[prompt_templates]
+system = """당신은 디스플레이 품질 검사 전문가입니다.
+이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요.
+<think>추론 과정</think><answer>분석 결과</answer> 형식으로 응답하세요."""
+
+user = "<image>\n이 디스플레이 패널 검사 이미지를 분석하여 결함 유형을 분류하고 근본 원인을 추론해주세요."
+
+answer_format = """<think>{reasoning}</think>
+<answer>
+결함 유형: {defect_type}
+위치: {location}
+심각도: {severity}
+가능한 원인: {root_cause}
+권장 조치: {action}
+</answer>"""

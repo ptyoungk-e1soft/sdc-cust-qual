@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Neo4j 그래프 데이터베이스
+  neo4j:
+    image: neo4j:5.15.0
+    container_name: sdc-neo4j-demo
+    ports:
+      - "7474:7474"  # HTTP (브라우저)
+      - "7687:7687"  # Bolt (드라이버)
+    volumes:
+      - neo4j_demo_data:/data
+      - neo4j_demo_logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_heap_initial__size=256m
+      - NEO4J_dbms_memory_heap_max__size=1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Gradio Demo UI
+  demo:
+    image: python:3.11-slim
+    container_name: sdc-demo-ui
+    ports:
+      - "7860:7860"
+    volumes:
+      - ../:/app
+    working_dir: /app
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_PASSWORD=password
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    command: >
+      bash -c "
+        pip install -q gradio networkx matplotlib pillow pyyaml neo4j &&
+        python demo/app_full.py
+      "
+    restart: unless-stopped
+
+volumes:
+  neo4j_demo_data:
+  neo4j_demo_logs:

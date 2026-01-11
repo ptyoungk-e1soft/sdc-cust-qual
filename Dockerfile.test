@@ -1,0 +1,39 @@
+# 테스트용 Dockerfile (VLM 모델 없이 경량 이미지)
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# 시스템 의존성
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 의존성 (경량 버전)
+RUN pip install --no-cache-dir \
+    fastapi>=0.110.0 \
+    uvicorn[standard]>=0.27.0 \
+    pydantic>=2.0.0 \
+    pydantic-settings>=2.0.0 \
+    Pillow>=10.0.0 \
+    numpy>=1.24.0 \
+    PyYAML>=6.0.0 \
+    python-multipart>=0.0.9 \
+    neo4j>=5.0.0
+
+# 소스 코드 복사
+COPY configs/ configs/
+COPY src/ src/
+COPY data/ data/
+
+# 환경 변수
+ENV PYTHONPATH=/app
+
+# 포트 노출
+EXPOSE 8000
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+
+# 테스트 서버 실행
+CMD ["python", "-m", "uvicorn", "src.api.test_server:app", "--host", "0.0.0.0", "--port", "8000"]

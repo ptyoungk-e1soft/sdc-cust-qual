@@ -1,0 +1,385 @@
+# GraphRAG 기반 디스플레이 불량 온톨로지 스키마
+# 결함-원인-공정 관계 정의
+
+database:
+  uri: "bolt://localhost:7687"
+  user: "neo4j"
+  password: "${NEO4J_PASSWORD}"
+  database: "display_defects"
+
+# 노드 유형 정의
+node_types:
+  Defect:
+    description: "디스플레이 결함 유형"
+    properties:
+      - name: defect_id
+        type: string
+        required: true
+      - name: defect_type
+        type: string
+        required: true
+      - name: korean_name
+        type: string
+        required: true
+      - name: description
+        type: string
+      - name: severity_levels
+        type: list
+        description: "가능한 심각도 수준 (low, medium, high, critical)"
+      - name: visual_characteristics
+        type: string
+        description: "시각적 특징 설명"
+    instances:
+      - defect_id: "DEF001"
+        defect_type: "dead_pixel"
+        korean_name: "데드 픽셀"
+        description: "화면에 검은 점으로 나타나는 비활성 픽셀"
+        severity_levels: ["low", "medium", "high"]
+        visual_characteristics: "검은색 또는 어두운 점, 개별 또는 군집"
+      - defect_id: "DEF002"
+        defect_type: "bright_spot"
+        korean_name: "휘점 결함"
+        description: "화면에 밝은 점으로 나타나는 결함"
+        severity_levels: ["low", "medium", "high"]
+        visual_characteristics: "밝은 점, 흰색 또는 색상 점"
+      - defect_id: "DEF003"
+        defect_type: "line_defect"
+        korean_name: "라인 결함"
+        description: "수평 또는 수직 방향의 선 형태 결함"
+        severity_levels: ["medium", "high", "critical"]
+        visual_characteristics: "수직/수평선, 단일 또는 다중"
+      - defect_id: "DEF004"
+        defect_type: "mura"
+        korean_name: "무라 (얼룩)"
+        description: "불균일한 밝기 또는 색상 분포"
+        severity_levels: ["low", "medium", "high"]
+        visual_characteristics: "얼룩 패턴, 그라데이션 불균일"
+      - defect_id: "DEF005"
+        defect_type: "scratch"
+        korean_name: "스크래치"
+        description: "표면 긁힘 결함"
+        severity_levels: ["low", "medium", "high"]
+        visual_characteristics: "선형 긁힘, 불규칙한 방향"
+      - defect_id: "DEF006"
+        defect_type: "particle"
+        korean_name: "이물질"
+        description: "제조 공정 중 혼입된 이물질"
+        severity_levels: ["low", "medium", "high", "critical"]
+        visual_characteristics: "불규칙한 형태의 점 또는 덩어리"
+
+  RootCause:
+    description: "결함의 근본 원인"
+    properties:
+      - name: cause_id
+        type: string
+        required: true
+      - name: cause_type
+        type: string
+        required: true
+      - name: korean_name
+        type: string
+        required: true
+      - name: description
+        type: string
+      - name: category
+        type: string
+        description: "원인 분류 (equipment, process, material, environment, human)"
+    instances:
+      - cause_id: "RC001"
+        cause_type: "tft_manufacturing_defect"
+        korean_name: "TFT 제조 결함"
+        description: "TFT 어레이 제조 공정 중 발생한 결함"
+        category: "process"
+      - cause_id: "RC002"
+        cause_type: "contamination"
+        korean_name: "오염"
+        description: "클린룸 환경 오염 또는 이물질 유입"
+        category: "environment"
+      - cause_id: "RC003"
+        cause_type: "alignment_error"
+        korean_name: "정렬 오류"
+        description: "층간 정렬 불량"
+        category: "equipment"
+      - cause_id: "RC004"
+        cause_type: "material_defect"
+        korean_name: "재료 결함"
+        description: "원재료 품질 문제"
+        category: "material"
+      - cause_id: "RC005"
+        cause_type: "handling_damage"
+        korean_name: "핸들링 손상"
+        description: "운반 또는 취급 중 발생한 손상"
+        category: "human"
+      - cause_id: "RC006"
+        cause_type: "etching_defect"
+        korean_name: "식각 결함"
+        description: "에칭 공정 중 발생한 문제"
+        category: "process"
+      - cause_id: "RC007"
+        cause_type: "deposition_defect"
+        korean_name: "증착 결함"
+        description: "박막 증착 공정 불량"
+        category: "process"
+      - cause_id: "RC008"
+        cause_type: "driver_ic_defect"
+        korean_name: "Driver IC 불량"
+        description: "드라이버 IC 또는 연결 불량"
+        category: "material"
+
+  Process:
+    description: "제조 공정 단계"
+    properties:
+      - name: process_id
+        type: string
+        required: true
+      - name: process_name
+        type: string
+        required: true
+      - name: korean_name
+        type: string
+        required: true
+      - name: sequence
+        type: integer
+        description: "공정 순서"
+      - name: equipment_types
+        type: list
+        description: "사용 장비 유형"
+    instances:
+      - process_id: "PROC001"
+        process_name: "tft_array"
+        korean_name: "TFT 어레이 공정"
+        sequence: 1
+        equipment_types: ["sputtering", "cvd", "exposure", "etching"]
+      - process_id: "PROC002"
+        process_name: "color_filter"
+        korean_name: "컬러 필터 공정"
+        sequence: 2
+        equipment_types: ["coating", "exposure", "development"]
+      - process_id: "PROC003"
+        process_name: "cell"
+        korean_name: "셀 공정"
+        sequence: 3
+        equipment_types: ["alignment", "sealing", "lc_injection"]
+      - process_id: "PROC004"
+        process_name: "module"
+        korean_name: "모듈 공정"
+        sequence: 4
+        equipment_types: ["bonding", "assembly", "testing"]
+
+  Equipment:
+    description: "제조 장비"
+    properties:
+      - name: equipment_id
+        type: string
+        required: true
+      - name: equipment_type
+        type: string
+        required: true
+      - name: korean_name
+        type: string
+        required: true
+      - name: manufacturer
+        type: string
+    instances:
+      - equipment_id: "EQ001"
+        equipment_type: "sputtering"
+        korean_name: "스퍼터링 장비"
+        manufacturer: "ULVAC"
+      - equipment_id: "EQ002"
+        equipment_type: "cvd"
+        korean_name: "CVD 장비"
+        manufacturer: "Applied Materials"
+      - equipment_id: "EQ003"
+        equipment_type: "exposure"
+        korean_name: "노광 장비"
+        manufacturer: "Canon"
+      - equipment_id: "EQ004"
+        equipment_type: "etching"
+        korean_name: "에칭 장비"
+        manufacturer: "LAM Research"
+
+  Action:
+    description: "권장 조치"
+    properties:
+      - name: action_id
+        type: string
+        required: true
+      - name: action_type
+        type: string
+        required: true
+      - name: korean_name
+        type: string
+        required: true
+      - name: description
+        type: string
+      - name: priority
+        type: string
+        description: "우선순위 (immediate, high, medium, low)"
+    instances:
+      - action_id: "ACT001"
+        action_type: "equipment_inspection"
+        korean_name: "장비 점검"
+        description: "관련 장비의 상태 점검 및 유지보수"
+        priority: "high"
+      - action_id: "ACT002"
+        action_type: "process_adjustment"
+        korean_name: "공정 조건 조정"
+        description: "공정 파라미터 재설정"
+        priority: "medium"
+      - action_id: "ACT003"
+        action_type: "material_change"
+        korean_name: "재료 교체"
+        description: "원재료 로트 변경 또는 공급업체 검토"
+        priority: "medium"
+      - action_id: "ACT004"
+        action_type: "environment_check"
+        korean_name: "환경 점검"
+        description: "클린룸 환경 점검 (온습도, 파티클 등)"
+        priority: "high"
+      - action_id: "ACT005"
+        action_type: "operator_training"
+        korean_name: "작업자 교육"
+        description: "핸들링 절차 재교육"
+        priority: "low"
+
+# 관계 유형 정의
+relationship_types:
+  CAUSED_BY:
+    description: "결함이 원인에 의해 발생"
+    from_type: Defect
+    to_type: RootCause
+    properties:
+      - name: probability
+        type: float
+        description: "발생 확률 (0-1)"
+      - name: evidence
+        type: string
+        description: "근거 설명"
+    instances:
+      - from: "DEF001"
+        to: "RC001"
+        probability: 0.7
+        evidence: "TFT 트랜지스터 제조 결함으로 인한 픽셀 비활성화"
+      - from: "DEF001"
+        to: "RC006"
+        probability: 0.2
+        evidence: "과도한 에칭으로 인한 트랜지스터 손상"
+      - from: "DEF002"
+        to: "RC007"
+        probability: 0.6
+        evidence: "증착 불균일로 인한 전하 누적"
+      - from: "DEF003"
+        to: "RC008"
+        probability: 0.8
+        evidence: "Driver IC 불량으로 인한 라인 구동 실패"
+      - from: "DEF003"
+        to: "RC003"
+        probability: 0.15
+        evidence: "정렬 오류로 인한 라인 단락"
+      - from: "DEF004"
+        to: "RC007"
+        probability: 0.7
+        evidence: "증착 두께 불균일"
+      - from: "DEF005"
+        to: "RC005"
+        probability: 0.9
+        evidence: "부주의한 취급으로 인한 표면 손상"
+      - from: "DEF006"
+        to: "RC002"
+        probability: 0.85
+        evidence: "클린룸 오염으로 인한 이물질 혼입"
+
+  OCCURS_IN:
+    description: "결함이 특정 공정에서 발생"
+    from_type: Defect
+    to_type: Process
+    properties:
+      - name: frequency
+        type: string
+        description: "발생 빈도 (rare, occasional, frequent)"
+    instances:
+      - from: "DEF001"
+        to: "PROC001"
+        frequency: "occasional"
+      - from: "DEF002"
+        to: "PROC001"
+        frequency: "rare"
+      - from: "DEF003"
+        to: "PROC004"
+        frequency: "occasional"
+      - from: "DEF004"
+        to: "PROC002"
+        frequency: "occasional"
+      - from: "DEF005"
+        to: "PROC004"
+        frequency: "frequent"
+      - from: "DEF006"
+        to: "PROC001"
+        frequency: "occasional"
+
+  USES:
+    description: "공정에서 장비 사용"
+    from_type: Process
+    to_type: Equipment
+    properties:
+      - name: critical
+        type: boolean
+        description: "핵심 장비 여부"
+
+  REQUIRES:
+    description: "원인 해결을 위해 조치 필요"
+    from_type: RootCause
+    to_type: Action
+    properties:
+      - name: effectiveness
+        type: float
+        description: "조치 효과성 (0-1)"
+    instances:
+      - from: "RC001"
+        to: "ACT001"
+        effectiveness: 0.8
+      - from: "RC002"
+        to: "ACT004"
+        effectiveness: 0.9
+      - from: "RC003"
+        to: "ACT001"
+        effectiveness: 0.85
+      - from: "RC004"
+        to: "ACT003"
+        effectiveness: 0.75
+      - from: "RC005"
+        to: "ACT005"
+        effectiveness: 0.7
+      - from: "RC006"
+        to: "ACT002"
+        effectiveness: 0.8
+      - from: "RC007"
+        to: "ACT002"
+        effectiveness: 0.8
+      - from: "RC008"
+        to: "ACT003"
+        effectiveness: 0.85
+
+# Cypher 쿼리 템플릿
+queries:
+  find_root_causes: |
+    MATCH (d:Defect {defect_type: $defect_type})-[r:CAUSED_BY]->(rc:RootCause)
+    RETURN rc.korean_name AS cause, rc.category AS category, r.probability AS probability
+    ORDER BY r.probability DESC
+    LIMIT 5
+
+  find_recommended_actions: |
+    MATCH (d:Defect {defect_type: $defect_type})-[:CAUSED_BY]->(rc:RootCause)-[r:REQUIRES]->(a:Action)
+    RETURN a.korean_name AS action, a.description AS description,
+           a.priority AS priority, r.effectiveness AS effectiveness
+    ORDER BY r.effectiveness DESC
+    LIMIT 5
+
+  find_related_processes: |
+    MATCH (d:Defect {defect_type: $defect_type})-[r:OCCURS_IN]->(p:Process)
+    RETURN p.korean_name AS process, r.frequency AS frequency
+    ORDER BY p.sequence
+
+  trace_defect_chain: |
+    MATCH path = (d:Defect {defect_type: $defect_type})-[:CAUSED_BY|OCCURS_IN|USES*1..3]->(n)
+    RETURN path

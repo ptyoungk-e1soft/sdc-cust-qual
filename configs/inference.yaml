@@ -1,0 +1,67 @@
+# 추론 설정
+
+model:
+  # 기본 모델 또는 fine-tuned 모델 경로
+  path: "nvidia/Cosmos-Reason1-7B"
+  # fine-tuned 모델 사용 시:
+  # path: "output/display_defect/checkpoint-final"
+
+  device_map: "auto"
+  torch_dtype: "bfloat16"
+  max_new_tokens: 1024
+  temperature: 0.1
+  top_p: 0.9
+  do_sample: false
+
+# 이미지 전처리
+preprocessing:
+  resize:
+    width: 1024
+    height: 1024
+  normalize: true
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+# 결함 분석 설정
+analysis:
+  confidence_threshold: 0.7
+  enable_reasoning: true
+  enable_graphrag: true
+  max_causes: 3
+  max_actions: 3
+
+# 출력 형식
+output:
+  format: "structured"  # structured, text, json
+  include_reasoning: true
+  include_visualization: false
+  language: "ko"
+
+# API 서버 설정
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  timeout: 120
+  max_request_size: 52428800  # 50MB
+
+# 로깅
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+  file: "logs/inference.log"
+  rotation: "100 MB"
+  retention: "1 week"
+
+# 캐싱
+cache:
+  enabled: true
+  backend: "memory"  # memory, redis
+  ttl: 3600
+  max_size: 1000
+
+# 배치 처리
+batch:
+  enabled: true
+  max_batch_size: 8
+  timeout: 5.0

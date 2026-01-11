@@ -1,0 +1,85 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sdc-cust-qual"
+version = "0.1.0"
+description = "Cosmos Reason VLM 기반 디스플레이 불량 분석 시스템"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "SDC Quality Team"}
+]
+keywords = ["vlm", "defect-detection", "display", "cosmos-reason", "graphrag"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.40.0",
+    "qwen-vl-utils>=0.0.8",
+    "accelerate>=0.27.0",
+    "peft>=0.10.0",
+    "bitsandbytes>=0.42.0",
+    "neo4j>=5.0.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.0.0",
+    "httpx>=0.27.0",
+    "PyYAML>=6.0.0",
+    "toml>=0.10.0",
+    "tqdm>=4.66.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+training = [
+    "deepspeed>=0.14.0",
+    "wandb>=0.16.0",
+    "tensorboard>=2.16.0",
+]
+
+[project.scripts]
+sdc-train = "scripts.train_sft:main"
+sdc-serve = "src.api.main:run_server"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
