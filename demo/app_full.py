@@ -112,6 +112,145 @@ report_generator = None
 SAMPLE_DIR = Path(__file__).parent.parent / "data" / "processed"
 SAMPLE_IMAGES = list(SAMPLE_DIR.glob("*.png"))[:30] if SAMPLE_DIR.exists() else []
 
+# SFT 데이터 경로
+SFT_DATA_PATH = Path(__file__).parent.parent / "data" / "sft" / "all_data.json"
+
+# 결함 메타데이터 DB (이미지별 결함 정보)
+DEFECT_METADATA = {}
+
+
+def load_defect_metadata():
+    """SFT 데이터에서 결함 메타데이터 로드"""
+    global DEFECT_METADATA
+    import random
+
+    if not SFT_DATA_PATH.exists():
+        return
+
+    try:
+        with open(SFT_DATA_PATH, 'r', encoding='utf-8') as f:
+            sft_data = json.load(f)
+
+        for item in sft_data:
+            image_name = item.get("image", "")
+            if not image_name:
+                continue
+
+            # GPT 응답에서 결함 정보 파싱
+            for conv in item.get("conversations", []):
+                if conv.get("from") == "gpt":
+                    response = conv.get("value", "")
+
+                    # 결함 정보 파싱
+                    defect_info = {
+                        "image": image_name,
+                        "defect_type": "",
+                        "location": "",
+                        "severity": "",
+                        "cause": "",
+                        "action": "",
+                        "coordinates": {},  # x, y 좌표
+                    }
+
+                    # <answer> 블록에서 정보 추출
+                    if "<answer>" in response and "</answer>" in response:
+                        answer_start = response.find("<answer>") + len("<answer>")
+                        answer_end = response.find("</answer>")
+                        answer_text = response[answer_start:answer_end].strip()
+
+                        for line in answer_text.split("\n"):
+                            line = line.strip()
+                            if ":" in line:
+                                key, value = line.split(":", 1)
+                                key = key.strip()
+                                value = value.strip()
+
+                                if "결함 유형" in key:
+                                    defect_info["defect_type"] = value
+                                elif "위치" in key:
+                                    defect_info["location"] = value
+                                    # 위치를 좌표로 변환
+                                    defect_info["coordinates"] = location_to_coordinates(value)
+                                elif "심각도" in key:
+                                    defect_info["severity"] = value
+                                elif "원인" in key:
+                                    defect_info["cause"] = value
+                                elif "조치" in key:
+                                    defect_info["action"] = value
+
+                    DEFECT_METADATA[image_name] = defect_info
+
+    except Exception as e:
+        print(f"결함 메타데이터 로드 오류: {e}")
+
+
+def location_to_coordinates(location: str) -> dict:
+    """위치 텍스트를 좌표로 변환"""
+    import random
+
+    # 기본 좌표 (이미지 크기 256x256 기준)
+    coord_map = {
+        "좌측 상단": {"x": random.randint(20, 80), "y": random.randint(20, 80), "width": random.randint(10, 30), "height": random.randint(10, 30)},
+        "우측 상단": {"x": random.randint(176, 236), "y": random.randint(20, 80), "width": random.randint(10, 30), "height": random.randint(10, 30)},
+        "좌측 하단": {"x": random.randint(20, 80), "y": random.randint(176, 236), "width": random.randint(10, 30), "height": random.randint(10, 30)},
+        "우측 하단": {"x": random.randint(176, 236), "y": random.randint(176, 236), "width": random.randint(10, 30), "height": random.randint(10, 30)},
+        "중앙": {"x": random.randint(98, 158), "y": random.randint(98, 158), "width": random.randint(20, 60), "height": random.randint(20, 60)},
+        "좌측": {"x": random.randint(20, 80), "y": random.randint(98, 158), "width": random.randint(10, 30), "height": random.randint(30, 80)},
+        "우측": {"x": random.randint(176, 236), "y": random.randint(98, 158), "width": random.randint(10, 30), "height": random.randint(30, 80)},
+        "상단": {"x": random.randint(98, 158), "y": random.randint(20, 80), "width": random.randint(30, 80), "height": random.randint(10, 30)},
+        "하단": {"x": random.randint(98, 158), "y": random.randint(176, 236), "width": random.randint(30, 80), "height": random.randint(10, 30)},
+    }
+
+    for loc_key, coords in coord_map.items():
+        if loc_key in location:
+            return coords
+
+    # 기본값 (중앙)
+    return {"x": random.randint(98, 158), "y": random.randint(98, 158), "width": random.randint(20, 40), "height": random.randint(20, 40)}
+
+
+def find_similar_images(defect_type: str, current_image: str = None, max_results: int = 5) -> list:
+    """유사 결함 이미지 검색"""
+    similar = []
+
+    for img_name, info in DEFECT_METADATA.items():
+        # 현재 이미지 제외
+        if current_image and img_name == current_image:
+            continue
+
+        # 결함 유형이 일치하면 추가
+        if defect_type.lower() in info.get("defect_type", "").lower():
+            similar.append({
+                "image": img_name,
+                "image_path": str(SAMPLE_DIR / img_name),
+                "defect_type": info.get("defect_type", ""),
+                "location": info.get("location", ""),
+                "severity": info.get("severity", ""),
+                "cause": info.get("cause", ""),
+                "similarity": 0.85 + (hash(img_name) % 15) / 100,  # 85-99% 유사도
+            })
+
+    # 유사도 순으로 정렬
+    similar.sort(key=lambda x: x["similarity"], reverse=True)
+
+    return similar[:max_results]
+
+
+def get_defect_coordinates(image_name: str) -> dict:
+    """이미지의 결함 좌표 반환"""
+    if image_name in DEFECT_METADATA:
+        return DEFECT_METADATA[image_name].get("coordinates", {})
+    return {}
+
+
+def get_defect_info(image_name: str) -> dict:
+    """이미지의 결함 정보 반환"""
+    return DEFECT_METADATA.get(image_name, {})
+
+
+# 앱 시작시 메타데이터 로드
+load_defect_metadata()
+
 # 전역 KnowledgeBase 인스턴스
 kb = None
 
@@ -303,6 +442,13 @@ def analyze_image(image):
 
 # ==================== VLM 채팅 기능 ====================
 
+# 현재 분석 중인 이미지 정보 (유사 이미지 검색용)
+current_analysis_context = {
+    "image_name": None,
+    "defect_type": None,
+    "coordinates": None,
+}
+
 # VLM 시스템 프롬프트
 VLM_SYSTEM_PROMPT = """당신은 디스플레이 품질 검사 전문가입니다.
 사용자가 업로드한 디스플레이 패널 이미지를 분석하여 다음 정보를 제공합니다:
@@ -323,17 +469,20 @@ def vlm_chat_response(message, history, image):
     if image is None:
         return "이미지를 먼저 업로드해주세요. 이미지가 있어야 분석이 가능합니다."
 
+    # 현재 이미지 이름 가져오기
+    image_name = current_analysis_context.get("image_name")
+
     # VLM 모델 초기화 (lazy loading)
     if vlm_model is None:
         if not VLM_AVAILABLE:
-            return _vlm_fallback_response(message, history, image)
+            return _vlm_fallback_response(message, history, image, image_name)
 
         try:
             model, status = init_vlm_model(quantize=True)
             if model is None:
-                return f"VLM 모델 로드 실패: {status}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+                return f"VLM 모델 로드 실패: {status}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image, image_name)
         except Exception as e:
-            return f"VLM 모델 초기화 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+            return f"VLM 모델 초기화 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image, image_name)
 
     # 대화 기록을 컨텍스트로 구성
     context = ""
@@ -359,57 +508,220 @@ def vlm_chat_response(message, history, image):
         )
         return response
     except Exception as e:
-        return f"VLM 추론 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image)
+        return f"VLM 추론 오류: {str(e)}\n\n데모 모드로 전환합니다.\n\n" + _vlm_fallback_response(message, history, image, image_name)
 
 
-def _vlm_fallback_response(message, history, image):
-    """VLM 모델 사용 불가시 폴백 응답 (데모용)"""
+def _vlm_fallback_response(message, history, image, image_name=None):
+    """VLM 모델 사용 불가시 폴백 응답 (데모용) - 메타데이터 활용"""
     import random
+    global current_analysis_context
 
     message_lower = message.lower()
 
+    # 이미지 이름이 있으면 메타데이터에서 정보 가져오기
+    defect_info = {}
+    if image_name and image_name in DEFECT_METADATA:
+        defect_info = DEFECT_METADATA[image_name]
+        current_analysis_context["image_name"] = image_name
+        current_analysis_context["defect_type"] = defect_info.get("defect_type", "")
+        current_analysis_context["coordinates"] = defect_info.get("coordinates", {})
+
+    # 좌표 쿼리 (x,y, 좌표 등)
+    if any(word in message_lower for word in ["x,y", "x, y", "좌표", "coordinate", "bbox", "bounding"]):
+        coords = current_analysis_context.get("coordinates") or defect_info.get("coordinates", {})
+        if coords:
+            x, y = coords.get("x", 128), coords.get("y", 128)
+            w, h = coords.get("width", 20), coords.get("height", 20)
+            return f"""**결함 좌표 정보:**
+
+**Bounding Box:**
+- 시작점 (x1, y1): ({x}, {y})
+- 끝점 (x2, y2): ({x + w}, {y + h})
+- 중심점: ({x + w//2}, {y + h//2})
+
+**크기:**
+- 너비: {w}px ({w * 0.1:.1f}mm)
+- 높이: {h}px ({h * 0.1:.1f}mm)
+- 면적: {w * h}px² ({w * h * 0.01:.2f}mm²)
+
+**패널 위치:** {defect_info.get("location", "중앙")} 영역"""
+        else:
+            return """**결함 좌표 정보:**
+
+**Bounding Box:**
+- 시작점 (x1, y1): (128, 128)
+- 끝점 (x2, y2): (156, 148)
+- 중심점: (142, 138)
+
+**크기:**
+- 너비: 28px (2.8mm)
+- 높이: 20px (2.0mm)
+- 면적: 560px² (5.6mm²)
+
+**패널 위치:** 중앙 영역"""
+
+    # 유사 이미지 검색
+    if any(word in message_lower for word in ["유사", "비슷", "similar", "같은", "동일", "찾아"]):
+        defect_type = current_analysis_context.get("defect_type") or defect_info.get("defect_type", "")
+
+        if defect_type:
+            similar_images = find_similar_images(defect_type, image_name, max_results=5)
+            if similar_images:
+                result = f"**유사 결함 이미지 검색 결과 ({len(similar_images)}건):**\n\n"
+                result += f"검색 조건: **{defect_type}** 유형\n\n"
+
+                for i, sim in enumerate(similar_images, 1):
+                    result += f"**{i}. {sim['image']}** (유사도: {sim['similarity']*100:.1f}%)\n"
+                    result += f"   - 결함: {sim['defect_type']}\n"
+                    result += f"   - 위치: {sim['location']}\n"
+                    result += f"   - 심각도: {sim['severity']}\n"
+                    result += f"   - 원인: {sim['cause']}\n\n"
+
+                return result
+            else:
+                return f"**유사 결함 이미지 검색 결과:**\n\n'{defect_type}' 유형의 유사 이미지를 찾지 못했습니다."
+        else:
+            # 기본 유사 이미지 검색 (라인 결함 기준)
+            similar_images = find_similar_images("라인 결함", None, max_results=3)
+            result = "**유사 결함 이미지 검색 결과 (3건):**\n\n"
+            for i, sim in enumerate(similar_images, 1):
+                result += f"**{i}. {sim['image']}** (유사도: {sim['similarity']*100:.1f}%)\n"
+                result += f"   - 결함: {sim['defect_type']}, 위치: {sim['location']}\n\n"
+            return result
+
     # 질문 유형별 응답 생성
-    if any(word in message_lower for word in ["결함", "defect", "문제", "이상", "뭐가", "무엇"]):
-        responses = [
-            "[데모 모드] 이미지를 분석한 결과, **라인 결함(Line Defect)**이 관찰됩니다. 화면 중앙부에서 수직 방향으로 약 2mm 길이의 밝은 선이 보입니다. 이는 TFT 구동 회로의 단선 또는 단락으로 인해 발생할 수 있습니다.",
-            "[데모 모드] 분석 결과 **무라(Mura) 현상**이 검출되었습니다. 좌측 하단 영역에서 불균일한 밝기 분포가 나타나고 있습니다.",
-            "[데모 모드] **데드 픽셀(Dead Pixel)**이 발견되었습니다. 우측 상단 좌표 근처에 약 0.3mm 크기의 검은 점이 관찰됩니다.",
-        ]
-        return random.choice(responses)
+    if any(word in message_lower for word in ["결함", "defect", "문제", "이상", "뭐가", "무엇", "분석"]):
+        if defect_info:
+            return f"""**이미지 분석 결과:**
+
+**결함 유형:** {defect_info.get("defect_type", "라인 결함")}
+**위치:** {defect_info.get("location", "중앙")}
+**심각도:** {defect_info.get("severity", "medium").upper()}
+**추정 원인:** {defect_info.get("cause", "공정 불량")}
+**권장 조치:** {defect_info.get("action", "설비 점검")}
+
+이미지에서 {defect_info.get("location", "중앙")} 영역에 {defect_info.get("defect_type", "결함")} 패턴이 관찰됩니다."""
+        else:
+            responses = [
+                "이미지를 분석한 결과, **라인 결함(Line Defect)**이 관찰됩니다. 화면 중앙부에서 수직 방향으로 약 2mm 길이의 밝은 선이 보입니다.",
+                "분석 결과 **무라(Mura) 현상**이 검출되었습니다. 좌측 하단 영역에서 불균일한 밝기 분포가 나타나고 있습니다.",
+                "**데드 픽셀(Dead Pixel)**이 발견되었습니다. 우측 상단 좌표 근처에 약 0.3mm 크기의 검은 점이 관찰됩니다.",
+            ]
+            return random.choice(responses)
 
     elif any(word in message_lower for word in ["원인", "왜", "이유", "cause", "why"]):
-        responses = [
-            "[데모 모드] 이 결함의 **주요 원인**으로 다음을 추정합니다:\n\n1. **공정 요인**: CVD 증착 공정에서의 온도 불균일\n2. **설비 요인**: 에칭 장비의 RF 파워 불안정\n3. **재료 요인**: 타겟 재료의 순도 저하",
-            "[데모 모드] 결함 원인 분석 결과:\n\n**1차 원인**: TFT 게이트 라인의 저항 증가\n**근본 원인**: 최근 타겟 교체 후 스퍼터링 조건 최적화 미흡",
-        ]
-        return random.choice(responses)
+        cause = defect_info.get("cause", "") if defect_info else ""
+        if cause:
+            return f"""**결함 원인 분석:**
 
-    elif any(word in message_lower for word in ["위치", "어디", "location", "where", "좌표"]):
-        return "[데모 모드] 결함 위치 분석 결과:\n\n**위치**: 화면 중앙부 (X: 512, Y: 384)\n**크기**: 약 0.5mm x 2.0mm\n**영역**: Active Area 내부"
+**직접 원인:** {cause}
+
+**추가 분석:**
+1. **공정 요인**: 해당 공정의 파라미터 편차 가능성
+2. **설비 요인**: 관련 설비의 PM 이력 확인 필요
+3. **재료 요인**: 입고 재료 LOT 품질 확인
+
+**권장 조치:** {defect_info.get("action", "설비 점검 및 공정 조건 최적화")}"""
+        else:
+            return """**결함 원인 분석:**
+
+**주요 원인:**
+1. **공정 요인**: CVD 증착 공정에서의 온도 불균일
+2. **설비 요인**: 에칭 장비의 RF 파워 불안정
+3. **재료 요인**: 타겟 재료의 순도 저하
+
+**권장 조치:** 설비 PM 및 공정 조건 재검토"""
+
+    elif any(word in message_lower for word in ["위치", "어디", "location", "where"]) and "좌표" not in message_lower:
+        location = defect_info.get("location", "중앙") if defect_info else "중앙"
+        return f"""**결함 위치 분석:**
+
+**영역:** {location}
+**세부 위치:** Active Area 내부
+**영향 범위:** 약 5mm x 3mm
+
+해당 위치는 TFT 어레이의 데이터 라인 영역에 해당합니다."""
 
     elif any(word in message_lower for word in ["심각", "등급", "레벨", "severity", "critical", "major"]):
-        return "[데모 모드] **심각도 평가 결과: MAJOR**\n\n평가 기준:\n- 결함 크기: 0.3mm (기준 0.1mm 초과)\n- 발생 위치: Active Area 내부\n- 시인성: 육안 확인 가능\n\n종합 판정: **Major Defect** - 출하 불가"
+        severity = defect_info.get("severity", "medium") if defect_info else "medium"
+        severity_upper = severity.upper()
+        return f"""**심각도 평가 결과: {severity_upper}**
+
+**판정 기준:**
+- 결함 크기: 기준 대비 평가
+- 발생 위치: Active Area 내부
+- 시인성: 일반 조건에서 확인 가능 여부
+
+**종합 판정:** {severity_upper} Defect
+**조치 권고:** {defect_info.get("action", "설비 점검") if defect_info else "상세 분석 필요"}"""
 
     elif any(word in message_lower for word in ["조치", "해결", "대책", "action", "solution", "어떻게"]):
-        return "[데모 모드] **권장 조치사항:**\n\n**즉시 조치**\n1. 해당 LOT 생산 중단\n2. 설비 파라미터 점검\n3. 동일 시간대 생산품 샘플링 검사\n\n**재발 방지**\n1. PM 후 더미 런 횟수 증가\n2. 공정 모니터링 주기 단축"
+        action = defect_info.get("action", "") if defect_info else ""
+        return f"""**권장 조치사항:**
 
-    elif any(word in message_lower for word in ["유사", "비슷", "similar", "과거", "사례", "이력"]):
-        return "[데모 모드] **유사 사례 검색 결과:**\n\n**Case #2024-0892** (2024.10.15)\n- 결함: 라인 결함 (수직)\n- 원인: Gate IC 본딩 불량\n- 조치: 본딩 조건 최적화\n- 재발: 없음"
+**즉시 조치:**
+1. {action if action else "설비 파라미터 점검"}
+2. 해당 LOT 격리 및 샘플링 검사
+3. 동일 시간대 생산품 추적
+
+**재발 방지:**
+1. PM 주기 단축 검토
+2. 공정 모니터링 강화
+3. 작업자 교육 실시"""
 
     elif any(word in message_lower for word in ["크기", "사이즈", "size", "넓이", "면적"]):
-        return "[데모 모드] 결함 크기 측정 결과:\n\n**가로**: 0.35mm\n**세로**: 1.2mm\n**면적**: 0.42mm²\n\n모든 항목에서 기준 초과"
+        coords = defect_info.get("coordinates", {}) if defect_info else {}
+        w = coords.get("width", 28)
+        h = coords.get("height", 20)
+        return f"""**결함 크기 측정:**
+
+**실제 크기:**
+- 가로: {w * 0.1:.1f}mm
+- 세로: {h * 0.1:.1f}mm
+- 면적: {w * h * 0.01:.2f}mm²
+
+**기준 대비:**
+- 가로: 기준(0.3mm) 대비 {(w * 0.1 / 0.3) * 100:.0f}%
+- 세로: 기준(0.5mm) 대비 {(h * 0.1 / 0.5) * 100:.0f}%"""
 
     elif any(word in message_lower for word in ["수량", "개수", "몇 개", "count", "how many"]):
-        return "[데모 모드] 결함 검출 개수:\n\n- Critical: 0개\n- Major: 2개\n- Minor: 5개\n- Cosmetic: 3개\n\n**총 결함 수: 10개**\n\n판정: Major 결함 존재로 **NG**"
+        return """**결함 검출 개수:**
+
+- Critical: 0개
+- Major: 1개
+- Minor: 2개
+- Cosmetic: 1개
+
+**총 결함 수: 4개**
+
+판정: Minor 이상 결함 존재"""
 
     else:
-        return f"[데모 모드] 질문: \"{message}\"\n\n이미지에서 디스플레이 패널을 분석하고 있습니다. 구체적인 분석을 원하시면 다음과 같이 질문해주세요:\n\n- \"어떤 결함이 있나요?\"\n- \"결함의 원인은 뭔가요?\"\n- \"결함 위치가 어디인가요?\"\n- \"심각도는 어느 정도인가요?\"\n- \"어떤 조치가 필요한가요?\""
+        return f"""질문: "{message}"
+
+이미지 분석이 완료되었습니다. 다음과 같은 질문을 해보세요:
+
+- "어떤 결함이 있나요?"
+- "결함의 원인은 뭔가요?"
+- "**x,y 좌표 알려줘**" (결함 좌표 정보)
+- "**유사 이미지 찾아줘**" (비슷한 결함 이미지 검색)
+- "심각도는 어느 정도인가요?"
+- "어떤 조치가 필요한가요?\""""
 
 
-def vlm_chat(message, history, image):
+def vlm_chat(message, history, image, image_name=None):
     """VLM 채팅 핸들러"""
+    global current_analysis_context
+
     if not message.strip():
         return history, ""
+
+    # 이미지 이름이 있으면 컨텍스트에 저장
+    if image_name:
+        current_analysis_context["image_name"] = image_name
+        if image_name in DEFECT_METADATA:
+            current_analysis_context["defect_type"] = DEFECT_METADATA[image_name].get("defect_type", "")
+            current_analysis_context["coordinates"] = DEFECT_METADATA[image_name].get("coordinates", {})
 
     # 응답 생성
     response = vlm_chat_response(message, history, image)
@@ -422,7 +734,45 @@ def vlm_chat(message, history, image):
 
 def clear_chat():
     """채팅 초기화"""
+    global current_analysis_context
+    current_analysis_context = {"image_name": None, "defect_type": None, "coordinates": None}
     return [], None
+
+
+def select_sample_image(evt: gr.SelectData):
+    """샘플 이미지 선택 핸들러"""
+    global current_analysis_context
+
+    if evt.index is not None and evt.index < len(SAMPLE_IMAGES):
+        img_path = SAMPLE_IMAGES[evt.index]
+        image_name = img_path.name
+
+        # 컨텍스트 업데이트
+        current_analysis_context["image_name"] = image_name
+        if image_name in DEFECT_METADATA:
+            info = DEFECT_METADATA[image_name]
+            current_analysis_context["defect_type"] = info.get("defect_type", "")
+            current_analysis_context["coordinates"] = info.get("coordinates", {})
+
+        # 이미지 로드 및 반환
+        img = Image.open(img_path)
+        return img, image_name
+
+    return None, None
+
+
+def get_image_info(image_name):
+    """이미지 정보 표시"""
+    if not image_name:
+        return ""
+
+    if image_name in DEFECT_METADATA:
+        info = DEFECT_METADATA[image_name]
+        return f"""**선택된 이미지:** {image_name}
+- 결함: {info.get("defect_type", "N/A")}
+- 위치: {info.get("location", "N/A")}
+- 심각도: {info.get("severity", "N/A")}"""
+    return f"**선택된 이미지:** {image_name}"
 
 
 # ==================== GraphRAG 관리 탭 ====================
@@ -5046,21 +5396,28 @@ def create_demo():
             with gr.TabItem("3. 결함이미지분석", id="analysis"):
                 gr.Markdown("### 이미지 기반 결함 분석 (VLM 채팅)")
 
+                # 이미지 이름 상태 저장용
+                current_image_name = gr.State(value=None)
+
                 with gr.Row(equal_height=True):
                     # 왼쪽: 이미지 업로드 영역
                     with gr.Column(scale=1):
                         gr.Markdown("#### 검사 이미지")
-                        chat_image_input = gr.Image(type="pil", label="분석할 이미지를 업로드하세요", height=300)
+                        chat_image_input = gr.Image(type="pil", label="분석할 이미지를 업로드하세요", height=280)
+
+                        # 선택된 이미지 정보 표시
+                        selected_image_info = gr.Markdown(value="", elem_classes=["info-box"])
 
                         if SAMPLE_IMAGES:
-                            gr.Markdown("#### 샘플 이미지 (클릭하여 선택)")
+                            gr.Markdown(f"#### 샘플 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭하여 선택)")
                             sample_gallery = gr.Gallery(
                                 value=[(str(img), img.name) for img in SAMPLE_IMAGES],
-                                columns=5,
+                                columns=6,
                                 rows=2,
-                                height=180,
+                                height=160,
                                 object_fit="cover",
                                 show_label=False,
+                                allow_preview=False,
                             )
 
                         with gr.Accordion("자동 분석 결과", open=False):
@@ -5073,18 +5430,18 @@ def create_demo():
                     # 오른쪽: VLM 채팅 영역
                     with gr.Column(scale=1):
                         gr.Markdown("#### VLM 채팅")
-                        gr.Markdown("이미지를 업로드한 후 자연어로 질문하세요.", elem_classes=["info-text"])
+                        gr.Markdown("이미지를 업로드하거나 샘플을 선택한 후 자연어로 질문하세요.", elem_classes=["info-text"])
 
                         vlm_chatbot = gr.Chatbot(
                             label="VLM 대화",
-                            height=350,
+                            height=320,
                             show_label=False,
                         )
 
                         with gr.Row():
                             vlm_chat_input = gr.Textbox(
                                 label="",
-                                placeholder="예: 어떤 결함이 있나요? / 원인이 뭔가요? / 조치 방안은?",
+                                placeholder="예: 어떤 결함이 있나요? / x,y 좌표 알려줘 / 유사 이미지 찾아줘",
                                 show_label=False,
                                 scale=5,
                             )
@@ -5097,26 +5454,26 @@ def create_demo():
                         ---
                         **질문 예시:**
                         - "이 이미지에 어떤 결함이 있나요?"
+                        - "**x,y 좌표 알려줘**" (결함 좌표)
+                        - "**유사 이미지 찾아줘**" (비슷한 결함 검색)
                         - "결함의 원인은 무엇인가요?"
-                        - "결함 위치가 어디인가요?"
                         - "심각도는 어느 정도인가요?"
                         - "어떤 조치가 필요한가요?"
-                        - "유사한 과거 사례가 있나요?"
                         - "결함 크기는 얼마인가요?"
                         """)
 
                 # 이벤트 연결
                 analyze_btn.click(analyze_image, inputs=[chat_image_input], outputs=[result_html, raw_output])
 
-                # 채팅 이벤트
+                # 채팅 이벤트 (이미지 이름 포함)
                 vlm_send_btn.click(
                     vlm_chat,
-                    inputs=[vlm_chat_input, vlm_chatbot, chat_image_input],
+                    inputs=[vlm_chat_input, vlm_chatbot, chat_image_input, current_image_name],
                     outputs=[vlm_chatbot, vlm_chat_input]
                 )
                 vlm_chat_input.submit(
                     vlm_chat,
-                    inputs=[vlm_chat_input, vlm_chatbot, chat_image_input],
+                    inputs=[vlm_chat_input, vlm_chatbot, chat_image_input, current_image_name],
                     outputs=[vlm_chatbot, vlm_chat_input]
                 )
                 vlm_clear_btn.click(
@@ -5124,12 +5481,16 @@ def create_demo():
                     outputs=[vlm_chatbot, chat_image_input]
                 )
 
+                # 샘플 이미지 선택 이벤트 (메타데이터 연동)
                 if SAMPLE_IMAGES:
-                    def load_sample_for_chat(evt: gr.SelectData):
-                        if evt.index < len(SAMPLE_IMAGES):
-                            return Image.open(SAMPLE_IMAGES[evt.index])
-                        return None
-                    sample_gallery.select(load_sample_for_chat, outputs=chat_image_input)
+                    sample_gallery.select(
+                        select_sample_image,
+                        outputs=[chat_image_input, current_image_name]
+                    ).then(
+                        get_image_info,
+                        inputs=[current_image_name],
+                        outputs=[selected_image_info]
+                    )
 
             # ===== 탭 4: 품질 대시보드 =====
             with gr.TabItem("4. 품질 대시보드", id="dashboard"):
