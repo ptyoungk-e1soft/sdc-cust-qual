@@ -110,7 +110,7 @@ report_generator = None
 
 # 샘플 이미지 경로 (최대 30개)
 SAMPLE_DIR = Path(__file__).parent.parent / "data" / "processed"
-SAMPLE_IMAGES = list(SAMPLE_DIR.glob("*.png"))[:30] if SAMPLE_DIR.exists() else []
+SAMPLE_IMAGES = sorted(list(SAMPLE_DIR.glob("*.png"))) if SAMPLE_DIR.exists() else []  # 100개 전체
 
 # SFT 데이터 경로
 SFT_DATA_PATH = Path(__file__).parent.parent / "data" / "sft" / "all_data.json"
@@ -120,10 +120,22 @@ DEFECT_METADATA = {}
 
 
 def load_defect_metadata():
-    """SFT 데이터에서 결함 메타데이터 로드"""
+    """결함 메타데이터 로드 (실제 좌표 포함)"""
     global DEFECT_METADATA
-    import random
 
+    # 새로운 메타데이터 파일 (실제 좌표 포함)
+    metadata_path = Path(__file__).parent.parent / "data" / "sft" / "defect_metadata.json"
+
+    if metadata_path.exists():
+        try:
+            with open(metadata_path, 'r', encoding='utf-8') as f:
+                DEFECT_METADATA = json.load(f)
+            print(f"실제 좌표 메타데이터 로드 완료: {len(DEFECT_METADATA)}개")
+            return
+        except Exception as e:
+            print(f"메타데이터 로드 오류: {e}")
+
+    # 폴백: 기존 SFT 데이터에서 로드
     if not SFT_DATA_PATH.exists():
         return
 
@@ -184,21 +196,127 @@ def load_defect_metadata():
         print(f"결함 메타데이터 로드 오류: {e}")
 
 
-def location_to_coordinates(location: str) -> dict:
-    """위치 텍스트를 좌표로 변환"""
-    import random
+def detect_defects_from_image(image) -> list:
+    """PIL/NumPy를 사용하여 이미지에서 실제 결함 위치 감지"""
+    import numpy as np
+    from PIL import Image
 
-    # 기본 좌표 (이미지 크기 256x256 기준)
+    if image is None:
+        return []
+
+    # PIL Image를 numpy 배열로 변환
+    if isinstance(image, Image.Image):
+        img_array = np.array(image.convert('L'))  # grayscale
+    else:
+        return []
+
+    defects = []
+    h, w = img_array.shape
+
+    # 전체 이미지 통계
+    img_mean = np.mean(img_array)
+    img_std = np.std(img_array)
+
+    # 배경 평균값 계산 (이미지 가장자리 기준)
+    edge_pixels = np.concatenate([
+        img_array[0, :], img_array[-1, :],
+        img_array[:, 0], img_array[:, -1]
+    ])
+    bg_mean = np.mean(edge_pixels)
+
+    # 동적 임계값 설정 (이미지 특성에 따라 조정)
+    # 표준편차가 크면 결함이 더 명확함
+    if img_std > 10:
+        # 결함이 명확한 경우
+        threshold_bright = bg_mean + img_std * 1.5
+        threshold_dark = bg_mean - img_std * 1.5
+    else:
+        # 결함이 미묘한 경우 - 더 민감하게
+        threshold_bright = bg_mean + max(8, img_std * 2)
+        threshold_dark = bg_mean - max(8, img_std * 2)
+
+    # 밝은 결함 감지 (휘점, 이물질 등)
+    bright_mask = img_array > threshold_bright
+
+    # 어두운 결함 감지 (데드 픽셀, 검은 점 등)
+    dark_mask = img_array < threshold_dark
+
+    # 결함 영역 찾기 (간단한 연결 컴포넌트 분석)
+    def find_bounding_boxes(mask, defect_type):
+        """마스크에서 연결된 영역의 bounding box 찾기"""
+        boxes = []
+        visited = np.zeros_like(mask, dtype=bool)
+
+        for y in range(h):
+            for x in range(w):
+                if mask[y, x] and not visited[y, x]:
+                    # BFS로 연결된 영역 찾기
+                    min_x, max_x = x, x
+                    min_y, max_y = y, y
+                    queue = [(x, y)]
+                    visited[y, x] = True
+                    pixel_count = 0
+
+                    while queue:
+                        cx, cy = queue.pop(0)
+                        pixel_count += 1
+                        min_x = min(min_x, cx)
+                        max_x = max(max_x, cx)
+                        min_y = min(min_y, cy)
+                        max_y = max(max_y, cy)
+
+                        # 8방향 이웃 확인
+                        for dx in [-1, 0, 1]:
+                            for dy in [-1, 0, 1]:
+                                nx, ny = cx + dx, cy + dy
+                                if 0 <= nx < w and 0 <= ny < h:
+                                    if mask[ny, nx] and not visited[ny, nx]:
+                                        visited[ny, nx] = True
+                                        queue.append((nx, ny))
+
+                    # 최소 크기 필터 (노이즈 제거)
+                    box_w = max_x - min_x + 1
+                    box_h = max_y - min_y + 1
+                    if pixel_count >= 5 and box_w >= 3 and box_h >= 3:
+                        # 여유 공간 추가
+                        padding = 5
+                        boxes.append({
+                            "x": max(0, min_x - padding),
+                            "y": max(0, min_y - padding),
+                            "width": min(box_w + 2 * padding, w - min_x),
+                            "height": min(box_h + 2 * padding, h - min_y),
+                            "type": defect_type,
+                            "size": pixel_count
+                        })
+
+        return boxes
+
+    # 밝은/어두운 결함 모두 찾기
+    bright_defects = find_bounding_boxes(bright_mask, "bright")
+    dark_defects = find_bounding_boxes(dark_mask, "dark")
+
+    defects = bright_defects + dark_defects
+
+    # 크기순 정렬 (큰 결함 먼저)
+    defects.sort(key=lambda d: d["size"], reverse=True)
+
+    # 상위 5개만 반환
+    return defects[:5]
+
+
+def location_to_coordinates(location: str) -> dict:
+    """위치 텍스트를 좌표로 변환 (256x256 기준 고정 좌표)"""
+    # 고정 좌표 (이미지 크기 256x256 기준) - 각 영역의 중심 위치
     coord_map = {
-        "좌측 상단": {"x": random.randint(20, 80), "y": random.randint(20, 80), "width": random.randint(10, 30), "height": random.randint(10, 30)},
-        "우측 상단": {"x": random.randint(176, 236), "y": random.randint(20, 80), "width": random.randint(10, 30), "height": random.randint(10, 30)},
-        "좌측 하단": {"x": random.randint(20, 80), "y": random.randint(176, 236), "width": random.randint(10, 30), "height": random.randint(10, 30)},
-        "우측 하단": {"x": random.randint(176, 236), "y": random.randint(176, 236), "width": random.randint(10, 30), "height": random.randint(10, 30)},
-        "중앙": {"x": random.randint(98, 158), "y": random.randint(98, 158), "width": random.randint(20, 60), "height": random.randint(20, 60)},
-        "좌측": {"x": random.randint(20, 80), "y": random.randint(98, 158), "width": random.randint(10, 30), "height": random.randint(30, 80)},
-        "우측": {"x": random.randint(176, 236), "y": random.randint(98, 158), "width": random.randint(10, 30), "height": random.randint(30, 80)},
-        "상단": {"x": random.randint(98, 158), "y": random.randint(20, 80), "width": random.randint(30, 80), "height": random.randint(10, 30)},
-        "하단": {"x": random.randint(98, 158), "y": random.randint(176, 236), "width": random.randint(30, 80), "height": random.randint(10, 30)},
+        "좌측 상단": {"x": 30, "y": 30, "width": 50, "height": 50},
+        "우측 상단": {"x": 176, "y": 30, "width": 50, "height": 50},
+        "좌측 하단": {"x": 30, "y": 176, "width": 50, "height": 50},
+        "우측 하단": {"x": 176, "y": 176, "width": 50, "height": 50},
+        "중앙": {"x": 88, "y": 88, "width": 80, "height": 80},
+        "좌측": {"x": 30, "y": 88, "width": 50, "height": 80},
+        "우측": {"x": 176, "y": 88, "width": 50, "height": 80},
+        "상단": {"x": 88, "y": 30, "width": 80, "height": 50},
+        "하단": {"x": 88, "y": 176, "width": 80, "height": 50},
     }
 
     for loc_key, coords in coord_map.items():
@@ -206,7 +324,7 @@ def location_to_coordinates(location: str) -> dict:
             return coords
 
     # 기본값 (중앙)
-    return {"x": random.randint(98, 158), "y": random.randint(98, 158), "width": random.randint(20, 40), "height": random.randint(20, 40)}
+    return {"x": 88, "y": 88, "width": 80, "height": 80}
 
 
 def find_similar_images(defect_type: str, current_image: str = None, max_results: int = 5) -> list:
@@ -249,7 +367,7 @@ def get_defect_info(image_name: str) -> dict:
 
 
 def visualize_defect_coordinates(image, image_name: str = None, custom_coords: dict = None):
-    """결함 좌표를 이미지에 시각화"""
+    """결함 좌표를 이미지에 시각화 (실제 결함 감지 사용)"""
     from PIL import ImageDraw, ImageFont
 
     if image is None:
@@ -265,22 +383,97 @@ def visualize_defect_coordinates(image, image_name: str = None, custom_coords: d
     if img.mode != "RGB":
         img = img.convert("RGB")
 
-    # 좌표 가져오기
-    coords = custom_coords
+    img_w, img_h = img.size
+
+    # 실제 결함 감지 시도
+    detected_defects = detect_defects_from_image(image)
+
+    # 메타데이터에서 결함 정보 가져오기
     defect_info = {}
+    if image_name:
+        defect_info = DEFECT_METADATA.get(image_name, {})
+
+    if detected_defects:
+        # 실제 감지된 결함 사용
+        draw = ImageDraw.Draw(img)
+
+        # 한글 폰트 로드
+        font = None
+        font_size = max(12, img_w // 30)
+        korean_font_paths = [
+            "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+            "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/noto/NotoSansKR-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+        for font_path in korean_font_paths:
+            try:
+                font = ImageFont.truetype(font_path, font_size)
+                break
+            except:
+                continue
+        if font is None:
+            font = ImageFont.load_default()
+
+        colors = [
+            (255, 0, 0),    # Red
+            (0, 255, 0),    # Green
+            (0, 0, 255),    # Blue
+            (255, 165, 0),  # Orange
+            (128, 0, 128),  # Purple
+        ]
+
+        info_lines = ["**실제 결함 감지 완료**\n"]
+
+        for idx, defect in enumerate(detected_defects):
+            color = colors[idx % len(colors)]
+            x = defect["x"]
+            y = defect["y"]
+            w = defect["width"]
+            h = defect["height"]
+            defect_type_detected = "밝은 결함" if defect["type"] == "bright" else "어두운 결함"
+
+            # 바운딩 박스 그리기
+            for i in range(3):
+                draw.rectangle([x - i, y - i, x + w + i, y + h + i], outline=color)
+
+            # 중심점 표시
+            center_x, center_y = x + w // 2, y + h // 2
+            cross_size = max(5, min(w, h) // 6)
+            draw.line([(center_x - cross_size, center_y), (center_x + cross_size, center_y)], fill=color, width=2)
+            draw.line([(center_x, center_y - cross_size), (center_x, center_y + cross_size)], fill=color, width=2)
+
+            # 라벨
+            label = f"#{idx + 1} {defect_type_detected}"
+            draw.rectangle([x, y - font_size - 4, x + len(label) * font_size // 2, y], fill=color)
+            draw.text((x + 2, y - font_size - 2), label, fill=(255, 255, 255), font=font)
+
+            info_lines.append(f"**결함 #{idx + 1}**: {defect_type_detected}")
+            info_lines.append(f"  - 위치: ({x}, {y})")
+            info_lines.append(f"  - 크기: {w} x {h} px")
+            info_lines.append(f"  - 픽셀 수: {defect['size']}")
+
+        # 메타데이터 정보 추가
+        if defect_info:
+            info_lines.append(f"\n**메타데이터 정보:**")
+            info_lines.append(f"  - 결함 유형: {defect_info.get('defect_type', 'N/A')}")
+            info_lines.append(f"  - 심각도: {defect_info.get('severity', 'N/A')}")
+
+        return img, "\n".join(info_lines)
+
+    # 결함이 감지되지 않으면 기존 로직 사용 (메타데이터 기반)
+    coords = custom_coords
 
     if coords is None and image_name:
-        defect_info = DEFECT_METADATA.get(image_name, {})
         coords = defect_info.get("coordinates", {})
 
     if coords is None:
-        # 컨텍스트에서 좌표 가져오기
         coords = current_analysis_context.get("coordinates", {})
         if current_analysis_context.get("image_name"):
             defect_info = DEFECT_METADATA.get(current_analysis_context["image_name"], {})
 
     if not coords:
-        # 기본 좌표 생성 (이미지 중앙)
         w, h = img.size
         coords = {
             "x": w // 4,
@@ -290,7 +483,6 @@ def visualize_defect_coordinates(image, image_name: str = None, custom_coords: d
         }
 
     # 좌표 스케일링 (256x256 기준 → 실제 이미지 크기)
-    img_w, img_h = img.size
     scale_x = img_w / 256
     scale_y = img_h / 256
 
@@ -321,10 +513,23 @@ def visualize_defect_coordinates(image, image_name: str = None, custom_coords: d
     severity = defect_info.get("severity", "N/A")
     label = f"{defect_type} ({severity})"
 
-    # 라벨 배경
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", max(12, img_w // 30))
-    except:
+    # 한글 지원 폰트 로드
+    font = None
+    font_size = max(12, img_w // 30)
+    korean_font_paths = [
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+        "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansKR-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]
+    for font_path in korean_font_paths:
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+            break
+        except:
+            continue
+    if font is None:
         font = ImageFont.load_default()
 
     # 텍스트 크기 계산
@@ -430,6 +635,144 @@ def visualize_multiple_defects(image, defects: list):
         draw.text((x + 3, y - 13), label, fill=(255, 255, 255), font=font)
 
     return img
+
+
+def open_popup(image):
+    """팝업 열기 - 이미지 확대 표시"""
+    if image is None:
+        return gr.update(visible=False), None
+    return gr.update(visible=True), image
+
+
+def close_popup():
+    """팝업 닫기"""
+    return gr.update(visible=False), None
+
+
+# ===== 채팅 히스토리 관리 =====
+CHAT_HISTORY_DIR = Path(__file__).parent / "chat_history"
+CHAT_HISTORY_DIR.mkdir(exist_ok=True)
+
+def get_chat_history_list():
+    """저장된 채팅 히스토리 목록 반환"""
+    history_files = sorted(CHAT_HISTORY_DIR.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+    history_list = []
+    for f in history_files[:20]:  # 최근 20개만
+        try:
+            with open(f, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                title = data.get("title", f.stem)
+                timestamp = data.get("timestamp", "")
+                image_name = data.get("image_name", "")
+                history_list.append(f"{title} ({image_name}) - {timestamp[:16]}")
+        except:
+            continue
+    return history_list
+
+def extract_message_text(msg):
+    """Gradio 메시지에서 텍스트 추출"""
+    if isinstance(msg, dict):
+        content = msg.get("content", "")
+        # content가 리스트인 경우 (예: [{'text': '...', 'type': 'text'}])
+        if isinstance(content, list) and len(content) > 0:
+            first_item = content[0]
+            if isinstance(first_item, dict):
+                return first_item.get("text", str(first_item))
+            return str(first_item)
+        return str(content) if content else ""
+    elif isinstance(msg, (list, tuple)) and len(msg) > 0:
+        return str(msg[0]) if msg[0] else ""
+    return str(msg)
+
+def save_chat_history(chatbot, image_name, title=None):
+    """현재 채팅을 히스토리에 저장"""
+    from datetime import datetime
+
+    print(f"[DEBUG] save_chat_history called: chatbot={len(chatbot) if chatbot else 0} messages, image_name={image_name}")
+
+    if not chatbot or len(chatbot) == 0:
+        return "저장할 채팅이 없습니다.", gr.update(choices=get_chat_history_list())
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if not title:
+        # 첫 번째 사용자 메시지에서 제목 생성
+        first_msg = extract_message_text(chatbot[0])
+        title = first_msg[:20] + "..." if len(first_msg) > 20 else first_msg
+        if not title:
+            title = "채팅"
+
+    filename = f"chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    filepath = CHAT_HISTORY_DIR / filename
+
+    # 메시지를 단순 형식으로 변환하여 저장
+    simplified_messages = []
+    for msg in chatbot:
+        text = extract_message_text(msg)
+        role = msg.get("role", "user") if isinstance(msg, dict) else "user"
+        simplified_messages.append({"role": role, "content": text})
+
+    data = {
+        "title": title,
+        "timestamp": timestamp,
+        "image_name": image_name or "없음",
+        "messages": simplified_messages
+    }
+
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    history_list = get_chat_history_list()
+    print(f"[DEBUG] Chat saved: {title}, history_list has {len(history_list)} items")
+    return f"✅ 저장됨: {title}", gr.update(choices=history_list)
+
+def load_chat_history(selected_history):
+    """선택된 히스토리 불러오기"""
+    if not selected_history:
+        return [], None, "히스토리를 선택해주세요."
+
+    # 파일 찾기
+    history_files = sorted(CHAT_HISTORY_DIR.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+
+    for f in history_files[:20]:
+        try:
+            with open(f, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                title = data.get("title", f.stem)
+                timestamp = data.get("timestamp", "")
+                image_name = data.get("image_name", "")
+                display_name = f"{title} ({image_name}) - {timestamp[:16]}"
+
+                if display_name == selected_history:
+                    messages = data.get("messages", [])
+                    return messages, image_name, f"불러옴: {title}"
+        except:
+            continue
+
+    return [], None, "히스토리를 찾을 수 없습니다."
+
+def delete_chat_history(selected_history):
+    """선택된 히스토리 삭제"""
+    if not selected_history:
+        return "삭제할 히스토리를 선택해주세요.", gr.update(choices=get_chat_history_list())
+
+    history_files = sorted(CHAT_HISTORY_DIR.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+
+    for f in history_files[:20]:
+        try:
+            with open(f, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                title = data.get("title", f.stem)
+                timestamp = data.get("timestamp", "")
+                image_name = data.get("image_name", "")
+                display_name = f"{title} ({image_name}) - {timestamp[:16]}"
+
+                if display_name == selected_history:
+                    f.unlink()
+                    return f"🗑️ 삭제됨: {title}", gr.update(choices=get_chat_history_list(), value=None)
+        except:
+            continue
+
+    return "삭제 실패", gr.update(choices=get_chat_history_list())
 
 
 # 앱 시작시 메타데이터 로드
@@ -626,6 +969,19 @@ def analyze_image(image):
 
 # ==================== VLM 채팅 기능 ====================
 
+# 데모 모드 상태 (True: 데모 모드, False: 실제 VLM)
+DEMO_MODE = True  # 기본값: 데모 모드 (빠른 응답)
+
+def toggle_demo_mode(current_mode):
+    """데모 모드 전환"""
+    global DEMO_MODE
+    DEMO_MODE = current_mode
+    print(f"[DEBUG] toggle_demo_mode called: current_mode={current_mode}, DEMO_MODE set to {DEMO_MODE}")
+    if current_mode:
+        return "**✅ 데모 모드 활성화** (빠른 응답, 메타데이터 기반)"
+    else:
+        return "**⚠️ VLM 모드 활성화** (실제 모델 추론, 느림)"
+
 # 현재 분석 중인 이미지 정보 (유사 이미지 검색용)
 current_analysis_context = {
     "image_name": None,
@@ -647,14 +1003,25 @@ VLM_SYSTEM_PROMPT = """당신은 디스플레이 품질 검사 전문가입니�
 
 
 def vlm_chat_response(message, history, image):
-    """VLM 채팅 응답 생성 - 실제 VLM 모델 사용"""
-    global vlm_model
+    """VLM 채팅 응답 생성 - 데모 모드 또는 실제 VLM 모델 사용"""
+    global vlm_model, DEMO_MODE
+
+    print(f"[DEBUG] vlm_chat_response called: message={message[:50] if message else None}, image={type(image)}, DEMO_MODE={DEMO_MODE}")
 
     if image is None:
+        print("[DEBUG] image is None, returning error message")
         return "이미지를 먼저 업로드해주세요. 이미지가 있어야 분석이 가능합니다."
 
     # 현재 이미지 이름 가져오기
     image_name = current_analysis_context.get("image_name")
+    print(f"[DEBUG] image_name={image_name}")
+
+    # 데모 모드인 경우 바로 fallback 응답 반환 (빠른 응답)
+    if DEMO_MODE:
+        print("[DEBUG] DEMO_MODE is True, calling _vlm_fallback_response")
+        response = _vlm_fallback_response(message, history, image, image_name)
+        print(f"[DEBUG] fallback response: {response[:100] if response else None}...")
+        return response
 
     # VLM 모델 초기화 (lazy loading)
     if vlm_model is None:
@@ -929,7 +1296,10 @@ def vlm_chat(message, history, image, image_name=None):
     """VLM 채팅 핸들러"""
     global current_analysis_context
 
+    print(f"[DEBUG] vlm_chat called: message={message}, image_name={image_name}, image_type={type(image)}")
+
     if not message.strip():
+        print("[DEBUG] Empty message, returning")
         return history, ""
 
     # 이미지 이름이 있으면 컨텍스트에 저장
@@ -940,10 +1310,15 @@ def vlm_chat(message, history, image, image_name=None):
             current_analysis_context["coordinates"] = DEFECT_METADATA[image_name].get("coordinates", {})
 
     # 응답 생성
+    print("[DEBUG] Calling vlm_chat_response...")
     response = vlm_chat_response(message, history, image)
+    print(f"[DEBUG] Got response: {response[:50] if response else None}...")
 
-    # 히스토리에 추가
-    history = history + [[message, response]]
+    # 히스토리에 추가 (Gradio 6.x 메시지 형식)
+    history = history + [
+        {"role": "user", "content": message},
+        {"role": "assistant", "content": response}
+    ]
 
     return history, ""
 
@@ -2389,6 +2764,50 @@ def create_subgraph_visualization(defect_type):
 # ==================== Gradio 인터페이스 ====================
 
 LIGHT_CSS = """
+/* ===== 분석 탭 메인 레이아웃 ===== */
+#analysis-main-row {
+    align-items: stretch !important;
+}
+#history-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 700px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+/* ===== 채팅 히스토리 스크롤 리스트 ===== */
+#history-list-container {
+    flex: 1;
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px;
+    background: #ffffff;
+}
+#history-radio-list {
+    max-height: none !important;
+}
+#history-radio-list label {
+    padding: 8px 10px;
+    margin: 4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 13px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#history-radio-list label:hover {
+    background: #e8f0fe !important;
+}
+
 /* ===== 전체 배경 흰색 + 글자 검정 ===== */
 *, *::before, *::after {
     color: #333333 !important;
@@ -2530,6 +2949,61 @@ button svg, button svg path {
     width: 100% !important;
     margin: 0 auto !important;
     padding: 20px !important;
+}
+
+/* ===== 라이트박스/모달 팝업 스타일 ===== */
+.image-popup-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 20px !important;
+}
+.image-popup-content {
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    background: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5) !important;
+}
+.image-popup-content img {
+    max-width: 85vw !important;
+    max-height: 80vh !important;
+    object-fit: contain !important;
+}
+.popup-close-btn {
+    position: absolute !important;
+    top: 20px !important;
+    right: 30px !important;
+    font-size: 40px !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    z-index: 10000 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 50% !important;
+    width: 50px !important;
+    height: 50px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    line-height: 1 !important;
+}
+.popup-close-btn:hover {
+    background: rgba(255, 0, 0, 0.7) !important;
+}
+.clickable-image {
+    cursor: zoom-in !important;
+}
+.clickable-image:hover {
+    opacity: 0.9 !important;
+    box-shadow: 0 0 10px rgba(74, 144, 217, 0.5) !important;
 }
 """
 
@@ -4229,9 +4703,17 @@ def create_demo():
 
         # 헤더 (배경 없음, 높이 50% 감소)
         gr.HTML("""
-        <div style="text-align: center; padding: 10px 20px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0;">
+        <div style="text-align: center; padding: 10px 20px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; position: relative;">
             <h1 style="color: #333333; margin: 0; font-size: 24px;">디스플레이 결함 분석 시스템</h1>
             <p style="color: #666666; margin: 5px 0 0 0; font-size: 13px;">Cosmos Reason VLM + GraphRAG 기반 지능형 품질 검사</p>
+            <a href="http://localhost:3000" target="_blank"
+               style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none;
+                      font-size: 13px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                      transition: all 0.2s ease;">
+                🔗 고객품질분석시스템
+            </a>
         </div>
         """)
 
@@ -5615,17 +6097,34 @@ def create_demo():
                 # 이미지 이름 상태 저장용
                 current_image_name = gr.State(value=None)
 
-                with gr.Row(equal_height=True):
-                    # 왼쪽: 이미지 영역
-                    with gr.Column(scale=1):
+                with gr.Row(equal_height=True, elem_id="analysis-main-row"):
+                    # 왼쪽 사이드바: 채팅 히스토리
+                    with gr.Column(scale=1, min_width=180, elem_id="history-sidebar"):
+                        gr.Markdown("#### 채팅 히스토리")
+                        # 스크롤 가능한 라디오 리스트
+                        with gr.Column(elem_id="history-list-container"):
+                            history_dropdown = gr.Radio(
+                                choices=get_chat_history_list(),
+                                label="저장된 대화 목록",
+                                interactive=True,
+                                elem_id="history-radio-list",
+                            )
+                        with gr.Row():
+                            load_history_btn = gr.Button("불러오기", size="sm", variant="secondary")
+                            delete_history_btn = gr.Button("삭제", size="sm", variant="stop")
+                        history_status = gr.Markdown("", elem_classes=["info-text"])
+
+                    # 중앙: 이미지 영역
+                    with gr.Column(scale=2):
                         # 샘플 이미지 (맨 위)
                         if SAMPLE_IMAGES:
-                            gr.Markdown(f"#### 샘플 결함 이미지 ({len(SAMPLE_IMAGES)}개 - 클릭하여 선택)")
+                            gr.Markdown(f"#### 분석할 결함 이미지 선택 ({len(SAMPLE_IMAGES)}개)")
+                            gr.Markdown("*아래 이미지를 클릭하면 결함 위치가 자동 표시되고, VLM 채팅 분석 대상이 됩니다.*")
                             sample_gallery = gr.Gallery(
                                 value=[(str(img), img.name) for img in SAMPLE_IMAGES],
-                                columns=6,
-                                rows=3,
-                                height=180,
+                                columns=10,
+                                rows=5,
+                                height=280,
                                 object_fit="cover",
                                 show_label=False,
                                 allow_preview=False,
@@ -5634,15 +6133,60 @@ def create_demo():
                         gr.Markdown("---")
 
                         # 결함 좌표 시각화 (클릭시 팝업 확대)
-                        gr.Markdown("#### 결함 좌표 시각화 (클릭하여 확대)")
+                        gr.Markdown("#### 결함 좌표 시각화 (이미지 클릭하여 확대)")
                         visualized_image = gr.Image(
                             type="pil",
                             label="결함 위치가 표시된 이미지 (클릭하여 확대)",
                             height=350,
                             interactive=False,
+                            elem_id="defect-visualization",
                         )
                         visualization_info = gr.Markdown(value="위에서 샘플 이미지를 클릭하면 결함 위치가 자동으로 표시됩니다.")
                         selected_image_info = gr.Markdown(value="", elem_classes=["info-box"])
+
+                        # JavaScript 라이트박스 (이미지 클릭시 팝업)
+                        gr.HTML("""
+                        <div id="lightbox-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out;">
+                            <img id="lightbox-img" src="" style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 0 30px rgba(255,255,255,0.3);">
+                            <div style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; background:rgba(0,0,0,0.5); width:50px; height:50px; border-radius:50%; display:flex; justify-content:center; align-items:center;" onclick="document.getElementById('lightbox-overlay').style.display='none';">&times;</div>
+                            <div style="position:absolute; bottom:20px; color:white; font-size:16px;">클릭하여 닫기 / ESC 키</div>
+                        </div>
+                        <script>
+                        (function() {
+                            // 라이트박스 닫기
+                            var overlay = document.getElementById('lightbox-overlay');
+                            overlay.addEventListener('click', function() {
+                                this.style.display = 'none';
+                            });
+                            // ESC 키로 닫기
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape') {
+                                    overlay.style.display = 'none';
+                                }
+                            });
+                            // 이미지 클릭 이벤트 설정
+                            function setupImageClick() {
+                                var container = document.getElementById('defect-visualization');
+                                if (container) {
+                                    var img = container.querySelector('img');
+                                    if (img && !img.dataset.lightboxSetup) {
+                                        img.dataset.lightboxSetup = 'true';
+                                        img.style.cursor = 'zoom-in';
+                                        img.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            var lightboxImg = document.getElementById('lightbox-img');
+                                            lightboxImg.src = this.src;
+                                            overlay.style.display = 'flex';
+                                        });
+                                    }
+                                }
+                            }
+                            // 초기 설정 및 주기적 체크 (동적 이미지 변경 대응)
+                            setInterval(setupImageClick, 500);
+                            setupImageClick();
+                        })();
+                        </script>
+                        """)
 
                         # 숨겨진 이미지 입력 (채팅용)
                         chat_image_input = gr.Image(type="pil", visible=False)
@@ -5656,7 +6200,14 @@ def create_demo():
 
                     # 오른쪽: VLM 채팅 영역
                     with gr.Column(scale=1):
-                        gr.Markdown("#### VLM 채팅")
+                        with gr.Row():
+                            gr.Markdown("#### VLM 채팅")
+                            demo_mode_checkbox = gr.Checkbox(
+                                label="데모 모드 (빠른 응답)",
+                                value=True,
+                                interactive=True,
+                            )
+                        demo_mode_status = gr.Markdown("**✅ 데모 모드 활성화** (빠른 응답, 메타데이터 기반)")
                         gr.Markdown("이미지를 업로드하거나 샘플을 선택한 후 자연어로 질문하세요.", elem_classes=["info-text"])
 
                         vlm_chatbot = gr.Chatbot(
@@ -5676,6 +6227,8 @@ def create_demo():
 
                         with gr.Row():
                             vlm_clear_btn = gr.Button("대화 초기화", variant="secondary", size="sm")
+                            vlm_save_btn = gr.Button("채팅 저장", variant="primary", size="sm")
+                        vlm_save_status = gr.Markdown("")
 
                         gr.Markdown("""
                         ---
@@ -5693,6 +6246,13 @@ def create_demo():
                 # 이벤트 연결
                 analyze_btn.click(analyze_image, inputs=[chat_image_input], outputs=[result_html, raw_output])
 
+                # 데모 모드 전환 이벤트
+                demo_mode_checkbox.change(
+                    toggle_demo_mode,
+                    inputs=[demo_mode_checkbox],
+                    outputs=[demo_mode_status]
+                )
+
                 # 채팅 이벤트 (이미지 이름 포함)
                 vlm_send_btn.click(
                     vlm_chat,
@@ -5707,6 +6267,13 @@ def create_demo():
                 vlm_clear_btn.click(
                     clear_chat,
                     outputs=[vlm_chatbot, chat_image_input]
+                )
+
+                # VLM 채팅 영역 내 저장 버튼 이벤트
+                vlm_save_btn.click(
+                    save_chat_history,
+                    inputs=[vlm_chatbot, current_image_name],
+                    outputs=[vlm_save_status, history_dropdown]
                 )
 
                 # 샘플 이미지 선택 이벤트 (메타데이터 연동)
@@ -5724,6 +6291,18 @@ def create_demo():
                         inputs=[chat_image_input, current_image_name],
                         outputs=[visualized_image, visualization_info]
                     )
+
+                # 채팅 히스토리 이벤트
+                load_history_btn.click(
+                    load_chat_history,
+                    inputs=[history_dropdown],
+                    outputs=[vlm_chatbot, current_image_name, history_status]
+                )
+                delete_history_btn.click(
+                    delete_chat_history,
+                    inputs=[history_dropdown],
+                    outputs=[history_status, history_dropdown]
+                )
 
             # ===== 탭 4: 품질 대시보드 =====
             with gr.TabItem("4. 품질 대시보드", id="dashboard"):
